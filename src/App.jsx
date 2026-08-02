@@ -6,9 +6,11 @@ import { formatUSNumber, parseUSNumber, formatCurrency } from './utils/formatter
 
 export default function MortgageCalculator() {
   const [purchasePrice, setPurchasePrice] = useState('400,000');
-  const [downPaymentType, setDownPaymentType] = useState('percent');
+
+  // Dedicated Down Payment States (%) and ($)
   const [downPaymentPercent, setDownPaymentPercent] = useState('20');
   const [downPaymentAmount, setDownPaymentAmount] = useState('80,000');
+
   const [interestRate, setInterestRate] = useState('6.5');
   const [loanTermYears, setLoanTermYears] = useState(30);
 
@@ -18,10 +20,11 @@ export default function MortgageCalculator() {
   const [hoaFee, setHoaFee] = useState('0');
   const [yearlyWaterCost, setYearlyWaterCost] = useState('960');
 
-  const [monthlyRent, setMonthlyRent] = useState('0');
+  const [monthlyRent, setMonthlyRent] = useState('3,500');
   const [propertyManagementRate, setPropertyManagementRate] = useState('4');
   const [propertyManagementFee, setPropertyManagementFee] = useState('140');
 
+  // Purchase Price Change Handler (recalculates Down Payment $ & Property Tax)
   const handlePriceChange = (e) => {
     const rawVal = parseUSNumber(e.target.value);
     if (rawVal === '') {
@@ -33,18 +36,47 @@ export default function MortgageCalculator() {
     const price = Math.max(0, Number(rawVal));
     setPurchasePrice(formatUSNumber(price));
 
+    // Recalculate Property Tax based on Tax Rate per $1,000
     const rate = taxRatePerThousand === '' ? 0 : Number(parseUSNumber(taxRatePerThousand));
     setYearlyPropertyTax(formatUSNumber(((price / 1000) * rate).toFixed(2)));
 
-    if (downPaymentType === 'percent') {
-      const pct = downPaymentPercent === '' ? 0 : Number(parseUSNumber(downPaymentPercent));
-      setDownPaymentAmount(formatUSNumber(((price * pct) / 100).toFixed(0)));
-    } else {
-      const amt = downPaymentAmount === '' ? 0 : Number(parseUSNumber(downPaymentAmount));
-      setDownPaymentPercent(price > 0 ? ((amt / price) * 100).toFixed(2) : '0');
-    }
+    // Recalculate Down Payment ($) based on existing Down Payment (%)
+    const pct = downPaymentPercent === '' ? 0 : Number(parseUSNumber(downPaymentPercent));
+    setDownPaymentAmount(formatUSNumber(((price * pct) / 100).toFixed(0)));
   };
 
+  // Down Payment (%) Change Handler
+  const handleDownPaymentPercentChange = (e) => {
+    const rawVal = e.target.value;
+    setDownPaymentPercent(rawVal);
+
+    if (rawVal === '') {
+      setDownPaymentAmount('0');
+      return;
+    }
+
+    const pct = Math.max(0, Math.min(100, Number(rawVal)));
+    const price = purchasePrice === '' ? 0 : Number(parseUSNumber(purchasePrice));
+    setDownPaymentAmount(formatUSNumber(((price * pct) / 100).toFixed(0)));
+  };
+
+  // Down Payment ($) Change Handler
+  const handleDownPaymentAmountChange = (e) => {
+    const rawVal = parseUSNumber(e.target.value);
+    if (rawVal === '') {
+      setDownPaymentAmount('');
+      setDownPaymentPercent('0');
+      return;
+    }
+
+    const amt = Math.max(0, Number(rawVal));
+    setDownPaymentAmount(formatUSNumber(amt));
+
+    const price = purchasePrice === '' ? 0 : Number(parseUSNumber(purchasePrice));
+    setDownPaymentPercent(price > 0 ? ((amt / price) * 100).toFixed(2) : '0');
+  };
+
+  // Property Tax Rate Change Handler
   const handleTaxRateChange = (e) => {
     const rawVal = e.target.value;
     setTaxRatePerThousand(rawVal);
@@ -56,6 +88,7 @@ export default function MortgageCalculator() {
     setYearlyPropertyTax(formatUSNumber(((price / 1000) * Number(rawVal)).toFixed(2)));
   };
 
+  // Rent Income Change Handler
   const handleRentChange = (e) => {
     const rawVal = parseUSNumber(e.target.value);
     setMonthlyRent(rawVal === '' ? '' : formatUSNumber(rawVal));
@@ -64,6 +97,7 @@ export default function MortgageCalculator() {
     setPropertyManagementFee(formatUSNumber(((rent * rate) / 100).toFixed(2)));
   };
 
+  // Property Management Fee (%) Handler
   const handleManagementRateChange = (e) => {
     const rawVal = e.target.value;
     setPropertyManagementRate(rawVal);
@@ -71,9 +105,24 @@ export default function MortgageCalculator() {
     setPropertyManagementFee(formatUSNumber(((rent * (Number(rawVal) || 0)) / 100).toFixed(2)));
   };
 
+  // Property Management Fee ($) Handler
+  const handleManagementFeeChange = (e) => {
+    const rawVal = parseUSNumber(e.target.value);
+    if (rawVal === '') {
+      setPropertyManagementFee('');
+      setPropertyManagementRate('0');
+      return;
+    }
+    const fee = Math.max(0, Number(rawVal));
+    setPropertyManagementFee(formatUSNumber(fee));
+
+    const rent = monthlyRent === '' ? 0 : Number(parseUSNumber(monthlyRent));
+    setPropertyManagementRate(rent > 0 ? ((fee / rent) * 100).toFixed(2) : '0');
+  };
+
   const calculations = useMortgageCalculator({
     purchasePrice,
-    downPaymentType,
+    downPaymentType: 'amount',
     downPaymentPercent,
     downPaymentAmount,
     interestRate,
@@ -92,49 +141,46 @@ export default function MortgageCalculator() {
 
       <div style={styles.mainLayout}>
         <div style={styles.formContainer}>
-          {/* LOAN DETAILS */}
+          {/* LOAN DETAILS SECTION */}
           <h3 style={styles.sectionHeader}>Loan Details</h3>
-          <div style={styles.twoColumnGrid}>
-            <FormInput label="Purchase Price" prefix="$" value={purchasePrice} onChange={handlePriceChange} />
 
-            {/* TOGGLEABLE DOWN PAYMENT FIELD */}
-            <div style={styles.downPaymentContainer}>
-              <div style={styles.downPaymentHeader}>
+          {/* PARENT GROUP: PURCHASE PRICE & DOWN PAYMENT */}
+          <div style={styles.groupedWrapper}>
+            <div style={styles.twoColumnGrid}>
+              <FormInput
+                label="Purchase Price"
+                prefix="$"
+                value={purchasePrice}
+                onChange={handlePriceChange}
+              />
+
+              {/* NESTED DOWN PAYMENT GROUP WITH SINGLE LABEL */}
+              <div style={styles.downPaymentGroupContainer}>
                 <label style={styles.label}>Down Payment</label>
-                <div style={styles.toggleGroup}>
-                  <button
-                    type="button"
-                    style={downPaymentType === 'percent' ? styles.activeToggle : styles.toggle}
-                    onClick={() => setDownPaymentType('percent')}
-                  >
-                    %
-                  </button>
-                  <button
-                    type="button"
-                    style={downPaymentType === 'amount' ? styles.activeToggle : styles.toggle}
-                    onClick={() => setDownPaymentType('amount')}
-                  >
-                    $
-                  </button>
+                <div style={styles.nestedDownPaymentGroup}>
+                  <FormInput
+                    suffix="%"
+                    value={downPaymentPercent}
+                    onChange={handleDownPaymentPercentChange}
+                  />
+                  <FormInput
+                    prefix="$"
+                    value={downPaymentAmount}
+                    onChange={handleDownPaymentAmountChange}
+                  />
                 </div>
               </div>
-
-              {downPaymentType === 'percent' ? (
-                <FormInput
-                  suffix="%"
-                  value={downPaymentPercent}
-                  onChange={(e) => setDownPaymentPercent(e.target.value)}
-                />
-              ) : (
-                <FormInput
-                  prefix="$"
-                  value={downPaymentAmount}
-                  onChange={(e) => setDownPaymentAmount(formatUSNumber(parseUSNumber(e.target.value)))}
-                />
-              )}
             </div>
+          </div>
 
-            <FormInput label="Interest Rate" suffix="%" value={interestRate} onChange={(e) => setInterestRate(e.target.value)} />
+          {/* INTEREST RATE & LOAN TERM */}
+          <div style={styles.twoColumnGrid}>
+            <FormInput
+              label="Interest Rate"
+              suffix="%"
+              value={interestRate}
+              onChange={(e) => setInterestRate(e.target.value)}
+            />
 
             <label style={styles.selectLabel}>
               Loan Term
@@ -160,8 +206,8 @@ export default function MortgageCalculator() {
           {/* RENTAL MANAGEMENT */}
           <h3 style={styles.sectionHeader}>Rental Management</h3>
           <div style={styles.twoColumnGrid}>
-            <FormInput label="Property Management Fee (%)" suffix="%" value={propertyManagementRate} onChange={handleManagementRateChange} />
-            <FormInput label="Monthly Property Management Fee ($)" prefix="$" value={propertyManagementFee} onChange={(e) => setPropertyManagementFee(formatUSNumber(parseUSNumber(e.target.value)))} />
+            <FormInput label="Management Fee" suffix="%" value={propertyManagementRate} onChange={handleManagementRateChange} />
+            <FormInput label="Monthly Management Fee" prefix="$" value={propertyManagementFee} onChange={handleManagementFeeChange} />
           </div>
         </div>
 
@@ -215,8 +261,8 @@ const styles = {
     margin: '0 auto',
     padding: '24px',
     fontFamily: 'system-ui, -apple-system, sans-serif',
-    color: '#111827',           // Fixed high-contrast text color
-    backgroundColor: '#ffffff', // Fixed white background for dark mode compatibility
+    color: '#111827',
+    backgroundColor: '#ffffff',
     borderRadius: '12px',
   },
   title: {
@@ -234,11 +280,35 @@ const styles = {
     flexDirection: 'column',
     gap: '8px',
   },
+  groupedWrapper: {
+    backgroundColor: '#f9fafb',
+    border: '1px solid #e5e7eb',
+    borderRadius: '8px',
+    padding: '16px',
+    marginBottom: '16px',
+  },
+  label: {
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#374151',
+    textAlign: 'left',
+    display: 'block',
+    marginBottom: '6px',
+  },
+  downPaymentGroupContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  nestedDownPaymentGroup: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    gap: '12px',
+  },
   twoColumnGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
     gap: '16px',
-    marginBottom: '16px',
+    alignItems: 'start',
   },
   sectionHeader: {
     margin: '12px 0 8px 0',
@@ -247,12 +317,6 @@ const styles = {
     paddingBottom: '4px',
     textAlign: 'left',
     color: '#111827',
-  },
-  label: {
-    fontSize: '14px',
-    fontWeight: '500',
-    color: '#374151',
-    textAlign: 'left',
   },
   selectLabel: {
     display: 'flex',
@@ -268,46 +332,14 @@ const styles = {
     borderRadius: '6px',
     border: '1px solid #d1d5db',
     fontSize: '15px',
-    backgroundColor: '#ffffff', // Fixed select background
-    color: '#111827',           // Fixed select text color
+    backgroundColor: '#ffffff',
+    color: '#111827',
     width: '100%',
     outline: 'none',
   },
   option: {
-    backgroundColor: '#ffffff', // Fixed option background
-    color: '#111827',           // Fixed option text color
-  },
-  downPaymentContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-  },
-  downPaymentHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  toggleGroup: {
-    display: 'flex',
-    border: '1px solid #d1d5db',
-    borderRadius: '6px',
-    overflow: 'hidden',
-  },
-  toggle: {
-    background: '#f3f4f6',
-    color: '#374151',
-    border: 'none',
-    padding: '2px 8px',
-    fontSize: '12px',
-    cursor: 'pointer',
-  },
-  activeToggle: {
-    background: '#2563eb',
-    color: '#ffffff',
-    border: 'none',
-    padding: '2px 8px',
-    fontSize: '12px',
-    cursor: 'pointer',
+    backgroundColor: '#ffffff',
+    color: '#111827',
   },
   summaryCard: {
     background: '#f9fafb',
