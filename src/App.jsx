@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
 
 export default function MortgageCalculator() {
+  const DEFAULT_PURCHASE_PRICE = 1600000;
   // Core Loan Inputs
-  const [purchasePrice, setPurchasePrice] = useState(400000);
+  const [purchasePrice, setPurchasePrice] = useState(DEFAULT_PURCHASE_PRICE);
   const [downPaymentType, setDownPaymentType] = useState('percent'); // 'percent' | 'amount'
   const [downPaymentPercent, setDownPaymentPercent] = useState(20);
   const [downPaymentAmount, setDownPaymentAmount] = useState(80000);
@@ -10,7 +11,13 @@ export default function MortgageCalculator() {
   const [loanTermYears, setLoanTermYears] = useState(30);
 
   // Additional Monthly & Yearly Expenses
-  const [yearlyPropertyTax, setYearlyPropertyTax] = useState(4800);
+  // Tax Rate: $12.40 per $1,000 of purchase price
+  const TAX_RATE_PER_THOUSAND = 12.40;
+  const [taxRatePerThousand, setTaxRatePerThousand] = useState(TAX_RATE_PER_THOUSAND);
+
+  // Default property tax set to $4,960 based on $400,000 purchase price ($12.40 per $1,000)
+  const [yearlyPropertyTax, setYearlyPropertyTax] = useState((DEFAULT_PURCHASE_PRICE / 1000) * taxRatePerThousand);
+
   const [yearlyInsurance, setYearlyInsurance] = useState(1200);
   const [hoaFee, setHoaFee] = useState(150); // Monthly
   const [waterUtility, setWaterUtility] = useState(80); // Monthly
@@ -19,12 +26,26 @@ export default function MortgageCalculator() {
   // Handlers for Down Payment sync
   const handlePriceChange = (val) => {
     const price = Math.max(0, val);
+
     setPurchasePrice(price);
+    // Recalculate Property Tax based on current tax rate
+    setYearlyPropertyTax((price / 1000) * taxRatePerThousand);
+
     if (downPaymentType === 'percent') {
       setDownPaymentAmount((price * downPaymentPercent) / 100);
     } else {
       setDownPaymentPercent(price > 0 ? (downPaymentAmount / price) * 100 : 0);
     }
+  };
+
+  // Handler for Property Tax Rate Change ($ per $1,000)
+  const handleTaxRateChange = (rate) => {
+    const validRate = Math.max(0, rate);
+    setTaxRatePerThousand(validRate);
+
+    // Dynamically update Property Tax value when Tax Rate changes:
+    // Property Tax = (Purchase Price / 1,000) * Tax Rate
+    setYearlyPropertyTax((purchasePrice / 1000) * validRate);
   };
 
   const handlePercentChange = (val) => {
@@ -175,6 +196,16 @@ export default function MortgageCalculator() {
 
           <h3 style={styles.sectionHeader}>Taxes & Additional Fees</h3>
 
+          <label style={styles.label}>
+            Property Tax Rate ($ per $1,000)
+            <input
+              type="number"
+              step="0.1"
+              style={styles.input}
+              value={taxRatePerThousand}
+              onChange={(e) => handleTaxRateChange(Number(e.target.value))}
+            />
+          </label>
           <label style={styles.label}>
             Yearly Property Tax ($)
             <input
