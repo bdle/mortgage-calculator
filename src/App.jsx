@@ -243,13 +243,16 @@ export default function MortgageCalculator() {
           <h3 style={styles.sectionHeader}>Loan Details</h3>
           <div style={styles.twoColumnGrid}>
             <label style={styles.label}>
-              Purchase Price ($)
-              <input
-                type="text"
-                style={styles.input}
-                value={purchasePrice}
-                onChange={handlePriceChange}
-              />
+              Purchase Price
+              <div style={styles.inputWrapper}>
+                <span style={styles.prefix}>$</span>
+                <input
+                  type="text"
+                  style={styles.inputWithPrefix}
+                  value={purchasePrice}
+                  onChange={handlePriceChange}
+                />
+              </div>
             </label>
 
             <div style={styles.downPaymentContainer}>
@@ -274,34 +277,43 @@ export default function MortgageCalculator() {
               </div>
 
               {downPaymentType === 'percent' ? (
-                <input
-                  type="text"
-                  style={styles.input}
-                  value={downPaymentPercent}
-                  onChange={handlePercentChange}
-                />
+                <div style={styles.inputWrapper}>
+                  <input
+                    type="text"
+                    style={styles.inputWithSuffix}
+                    value={downPaymentPercent}
+                    onChange={handlePercentChange}
+                  />
+                  <span style={styles.suffix}>%</span>
+                </div>
               ) : (
-                <input
-                  type="text"
-                  style={styles.input}
-                  value={downPaymentAmount}
-                  onChange={handleAmountChange}
-                />
+                <div style={styles.inputWrapper}>
+                  <span style={styles.prefix}>$</span>
+                  <input
+                    type="text"
+                    style={styles.inputWithPrefix}
+                    value={downPaymentAmount}
+                    onChange={handleAmountChange}
+                  />
+                </div>
               )}
             </div>
 
             <label style={styles.label}>
-              Interest Rate (%)
-              <input
-                type="text"
-                style={styles.input}
-                value={interestRate}
-                onChange={(e) => setInterestRate(e.target.value)}
-              />
+              Interest Rate
+              <div style={styles.inputWrapper}>
+                <input
+                  type="text"
+                  style={styles.inputWithSuffix}
+                  value={interestRate}
+                  onChange={(e) => setInterestRate(e.target.value)}
+                />
+                <span style={styles.suffix}>%</span>
+              </div>
             </label>
 
             <label style={styles.label}>
-              Loan Term (Years)
+              Loan Term
               <select
                 style={styles.input}
                 value={loanTermYears}
@@ -318,63 +330,82 @@ export default function MortgageCalculator() {
           <h3 style={styles.sectionHeader}>Taxes & Additional Fees</h3>
           <div style={styles.twoColumnGrid}>
             <label style={styles.label}>
-              Property Tax Rate ($ per $1,000)
-              <input
-                type="text"
-                style={styles.input}
-                value={taxRatePerThousand}
-                onChange={handleTaxRateChange}
-              />
+              Property Tax Rate
+              <div style={styles.inputWrapper}>
+                <span style={styles.prefix}>$</span>
+                <input
+                  type="text"
+                  style={styles.inputWithLongSuffix}
+                  value={taxRatePerThousand}
+                  onChange={handleTaxRateChange}
+                />
+                <span style={styles.suffix}>per $1,000</span>
+              </div>
             </label>
 
             <label style={styles.label}>
-              Yearly Property Tax ($)
-              <input
-                type="text"
-                style={styles.input}
-                value={yearlyPropertyTax}
-                onChange={(e) => setYearlyPropertyTax(formatUSNumber(parseUSNumber(e.target.value)))}
-              />
+              Yearly Property Tax
+              <div style={styles.inputWrapper}>
+                <span style={styles.prefix}>$</span>
+                <input
+                  type="text"
+                  style={styles.inputWithPrefix}
+                  value={yearlyPropertyTax}
+                  onChange={(e) => setYearlyPropertyTax(formatUSNumber(parseUSNumber(e.target.value)))}
+                />
+              </div>
             </label>
 
             <label style={styles.label}>
-              Yearly Insurance ($)
-              <input
-                type="text"
-                style={styles.input}
-                value={yearlyInsurance}
-                onChange={(e) => setYearlyInsurance(formatUSNumber(parseUSNumber(e.target.value)))}
-              />
+              Yearly Insurance
+              <div style={styles.inputWrapper}>
+                <span style={styles.prefix}>$</span>
+                <input
+                  type="text"
+                  style={styles.inputWithPrefix}
+                  value={yearlyInsurance}
+                  onChange={(e) => setYearlyInsurance(formatUSNumber(parseUSNumber(e.target.value)))}
+                />
+              </div>
             </label>
 
             <label style={styles.label}>
-              Monthly HOA Fee ($)
-              <input
-                type="text"
-                style={styles.input}
-                value={hoaFee}
-                onChange={(e) => setHoaFee(formatUSNumber(parseUSNumber(e.target.value)))}
-              />
+              Monthly HOA Fee
+              <div style={styles.inputWrapper}>
+                <span style={styles.prefix}>$</span>
+                <input
+                  type="text"
+                  style={styles.inputWithPrefix}
+                  value={hoaFee}
+                  onChange={(e) => setHoaFee(formatUSNumber(parseUSNumber(e.target.value)))}
+                />
+              </div>
             </label>
 
             <label style={styles.label}>
-              Yearly Water Cost ($)
-              <input
-                type="text"
-                style={styles.input}
-                value={yearlyWaterCost}
-                onChange={(e) => setYearlyWaterCost(formatUSNumber(parseUSNumber(e.target.value)))}
-              />
+              Yearly Water Cost
+              <div style={styles.inputWrapper}>
+                <span style={styles.prefix}>$</span>
+                <input
+                  type="text"
+                  style={styles.inputWithPrefix}
+                  value={yearlyWaterCost}
+                  onChange={(e) => setYearlyWaterCost(formatUSNumber(parseUSNumber(e.target.value)))}
+                />
+              </div>
             </label>
 
             <label style={styles.label}>
-              Expected Monthly Rent ($)
-              <input
-                type="text"
-                style={styles.input}
-                value={monthlyRent}
-                onChange={handleRentChange}
-              />
+              Expected Monthly Rent
+              <div style={styles.inputWrapper}>
+                <span style={styles.prefix}>$</span>
+                <input
+                  type="text"
+                  style={styles.inputWithPrefix}
+                  value={monthlyRent}
+                  onChange={handleRentChange}
+                />
+              </div>
             </label>
           </div>
 
@@ -383,22 +414,28 @@ export default function MortgageCalculator() {
           <div style={styles.twoColumnGrid}>
             <label style={styles.label}>
               Management Fee (%)
-              <input
-                type="text"
-                style={styles.input}
-                value={propertyManagementRate}
-                onChange={handleManagementRateChange}
-              />
+              <div style={styles.inputWrapper}>
+                <input
+                  type="text"
+                  style={styles.inputWithSuffix}
+                  value={propertyManagementRate}
+                  onChange={handleManagementRateChange}
+                />
+                <span style={styles.suffix}>%</span>
+              </div>
             </label>
 
             <label style={styles.label}>
               Monthly Management Fee ($)
-              <input
-                type="text"
-                style={styles.input}
-                value={propertyManagementFee}
-                onChange={handleManagementFeeChange}
-              />
+              <div style={styles.inputWrapper}>
+                <span style={styles.prefix}>$</span>
+                <input
+                  type="text"
+                  style={styles.inputWithPrefix}
+                  value={propertyManagementFee}
+                  onChange={handleManagementFeeChange}
+                />
+              </div>
             </label>
           </div>
         </div>
@@ -514,7 +551,7 @@ const styles = {
   },
   twoColumnGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', // Forces 2 items per line
+    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
     gap: '16px',
     marginBottom: '16px',
   },
@@ -533,8 +570,62 @@ const styles = {
     fontWeight: '500',
     color: '#374151',
   },
+  inputWrapper: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  prefix: {
+    position: 'absolute',
+    left: '12px',
+    fontSize: '15px',
+    color: '#6b7280',
+    fontWeight: '500',
+    pointerEvents: 'none',
+  },
+  suffix: {
+    position: 'absolute',
+    right: '12px',
+    fontSize: '13px',
+    color: '#6b7280',
+    fontWeight: '500',
+    pointerEvents: 'none',
+  },
   input: {
     padding: '10px 12px',
+    borderRadius: '6px',
+    border: '1px solid #d1d5db',
+    fontSize: '15px',
+    backgroundColor: '#ffffff',
+    color: '#111827',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box',
+  },
+  inputWithPrefix: {
+    padding: '10px 12px 10px 26px',
+    borderRadius: '6px',
+    border: '1px solid #d1d5db',
+    fontSize: '15px',
+    backgroundColor: '#ffffff',
+    color: '#111827',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box',
+  },
+  inputWithSuffix: {
+    padding: '10px 26px 10px 12px',
+    borderRadius: '6px',
+    border: '1px solid #d1d5db',
+    fontSize: '15px',
+    backgroundColor: '#ffffff',
+    color: '#111827',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box',
+  },
+  inputWithLongSuffix: {
+    padding: '10px 85px 10px 26px', // Extra padding right for "per $1,000"
     borderRadius: '6px',
     border: '1px solid #d1d5db',
     fontSize: '15px',
