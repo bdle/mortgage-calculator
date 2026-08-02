@@ -32,8 +32,6 @@ export default function MortgageCalculator() {
   const [yearlyPropertyTax, setYearlyPropertyTax] = useState('4,960');
   const [yearlyInsurance, setYearlyInsurance] = useState('1,200');
   const [hoaFee, setHoaFee] = useState('150');
-
-  // UPDATED: Yearly Water Cost (defaulting to $960/yr, which is $80/mo)
   const [yearlyWaterCost, setYearlyWaterCost] = useState('960');
 
   // Rental Income & Management Fee (%)
@@ -238,169 +236,174 @@ export default function MortgageCalculator() {
     <div style={styles.container}>
       <h2 style={styles.title}>Mortgage & Rent Roll Calculator</h2>
 
-      <div style={styles.grid}>
-        {/* Form Inputs */}
-        <div style={styles.formGroup}>
+      <div style={styles.mainLayout}>
+        {/* Input Form Section */}
+        <div style={styles.formContainer}>
+          {/* LOAN DETAILS SECTION */}
           <h3 style={styles.sectionHeader}>Loan Details</h3>
+          <div style={styles.twoColumnGrid}>
+            <label style={styles.label}>
+              Purchase Price ($)
+              <input
+                type="text"
+                style={styles.input}
+                value={purchasePrice}
+                onChange={handlePriceChange}
+              />
+            </label>
 
-          <label style={styles.label}>
-            Purchase Price ($)
-            <input
-              type="text"
-              style={styles.input}
-              value={purchasePrice}
-              onChange={handlePriceChange}
-            />
-          </label>
-
-          <div style={styles.downPaymentContainer}>
-            <div style={styles.downPaymentHeader}>
-              <label style={styles.label}>Down Payment</label>
-              <div style={styles.toggleGroup}>
-                <button
-                  type="button"
-                  style={downPaymentType === 'percent' ? styles.activeToggle : styles.toggle}
-                  onClick={() => setDownPaymentType('percent')}
-                >
-                  %
-                </button>
-                <button
-                  type="button"
-                  style={downPaymentType === 'amount' ? styles.activeToggle : styles.toggle}
-                  onClick={() => setDownPaymentType('amount')}
-                >
-                  $
-                </button>
+            <div style={styles.downPaymentContainer}>
+              <div style={styles.downPaymentHeader}>
+                <label style={styles.label}>Down Payment</label>
+                <div style={styles.toggleGroup}>
+                  <button
+                    type="button"
+                    style={downPaymentType === 'percent' ? styles.activeToggle : styles.toggle}
+                    onClick={() => setDownPaymentType('percent')}
+                  >
+                    %
+                  </button>
+                  <button
+                    type="button"
+                    style={downPaymentType === 'amount' ? styles.activeToggle : styles.toggle}
+                    onClick={() => setDownPaymentType('amount')}
+                  >
+                    $
+                  </button>
+                </div>
               </div>
+
+              {downPaymentType === 'percent' ? (
+                <input
+                  type="text"
+                  style={styles.input}
+                  value={downPaymentPercent}
+                  onChange={handlePercentChange}
+                />
+              ) : (
+                <input
+                  type="text"
+                  style={styles.input}
+                  value={downPaymentAmount}
+                  onChange={handleAmountChange}
+                />
+              )}
             </div>
 
-            {downPaymentType === 'percent' ? (
+            <label style={styles.label}>
+              Interest Rate (%)
               <input
                 type="text"
                 style={styles.input}
-                value={downPaymentPercent}
-                onChange={handlePercentChange}
+                value={interestRate}
+                onChange={(e) => setInterestRate(e.target.value)}
               />
-            ) : (
-              <input
-                type="text"
+            </label>
+
+            <label style={styles.label}>
+              Loan Term (Years)
+              <select
                 style={styles.input}
-                value={downPaymentAmount}
-                onChange={handleAmountChange}
-              />
-            )}
+                value={loanTermYears}
+                onChange={(e) => setLoanTermYears(Number(e.target.value))}
+              >
+                <option value={15}>15 Years</option>
+                <option value={20}>20 Years</option>
+                <option value={30}>30 Years</option>
+              </select>
+            </label>
           </div>
 
-          <label style={styles.label}>
-            Interest Rate (%)
-            <input
-              type="text"
-              style={styles.input}
-              value={interestRate}
-              onChange={(e) => setInterestRate(e.target.value)}
-            />
-          </label>
-
-          <label style={styles.label}>
-            Loan Term (Years)
-            <select
-              style={styles.input}
-              value={loanTermYears}
-              onChange={(e) => setLoanTermYears(Number(e.target.value))}
-            >
-              <option value={15}>15 Years</option>
-              <option value={20}>20 Years</option>
-              <option value={30}>30 Years</option>
-            </select>
-          </label>
-
+          {/* TAXES & ADDITIONAL FEES SECTION */}
           <h3 style={styles.sectionHeader}>Taxes & Additional Fees</h3>
+          <div style={styles.twoColumnGrid}>
+            <label style={styles.label}>
+              Property Tax Rate ($ per $1,000)
+              <input
+                type="text"
+                style={styles.input}
+                value={taxRatePerThousand}
+                onChange={handleTaxRateChange}
+              />
+            </label>
 
-          <label style={styles.label}>
-            Property Tax Rate ($ per $1,000)
-            <input
-              type="text"
-              style={styles.input}
-              value={taxRatePerThousand}
-              onChange={handleTaxRateChange}
-            />
-          </label>
+            <label style={styles.label}>
+              Yearly Property Tax ($)
+              <input
+                type="text"
+                style={styles.input}
+                value={yearlyPropertyTax}
+                onChange={(e) => setYearlyPropertyTax(formatUSNumber(parseUSNumber(e.target.value)))}
+              />
+            </label>
 
-          <label style={styles.label}>
-            Yearly Property Tax ($)
-            <input
-              type="text"
-              style={styles.input}
-              value={yearlyPropertyTax}
-              onChange={(e) => setYearlyPropertyTax(formatUSNumber(parseUSNumber(e.target.value)))}
-            />
-          </label>
+            <label style={styles.label}>
+              Yearly Insurance ($)
+              <input
+                type="text"
+                style={styles.input}
+                value={yearlyInsurance}
+                onChange={(e) => setYearlyInsurance(formatUSNumber(parseUSNumber(e.target.value)))}
+              />
+            </label>
 
-          <label style={styles.label}>
-            Yearly Insurance ($)
-            <input
-              type="text"
-              style={styles.input}
-              value={yearlyInsurance}
-              onChange={(e) => setYearlyInsurance(formatUSNumber(parseUSNumber(e.target.value)))}
-            />
-          </label>
+            <label style={styles.label}>
+              Monthly HOA Fee ($)
+              <input
+                type="text"
+                style={styles.input}
+                value={hoaFee}
+                onChange={(e) => setHoaFee(formatUSNumber(parseUSNumber(e.target.value)))}
+              />
+            </label>
 
-          <label style={styles.label}>
-            Monthly HOA Fee ($)
-            <input
-              type="text"
-              style={styles.input}
-              value={hoaFee}
-              onChange={(e) => setHoaFee(formatUSNumber(parseUSNumber(e.target.value)))}
-            />
-          </label>
+            <label style={styles.label}>
+              Yearly Water Cost ($)
+              <input
+                type="text"
+                style={styles.input}
+                value={yearlyWaterCost}
+                onChange={(e) => setYearlyWaterCost(formatUSNumber(parseUSNumber(e.target.value)))}
+              />
+            </label>
 
-          {/* UPDATED FIELD: Yearly Water Cost */}
-          <label style={styles.label}>
-            Yearly Water Cost ($)
-            <input
-              type="text"
-              style={styles.input}
-              value={yearlyWaterCost}
-              onChange={(e) => setYearlyWaterCost(formatUSNumber(parseUSNumber(e.target.value)))}
-            />
-          </label>
+            <label style={styles.label}>
+              Expected Monthly Rent ($)
+              <input
+                type="text"
+                style={styles.input}
+                value={monthlyRent}
+                onChange={handleRentChange}
+              />
+            </label>
+          </div>
 
-          <h3 style={styles.sectionHeader}>Rental Income & Management</h3>
+          {/* RENTAL MANAGEMENT SECTION */}
+          <h3 style={styles.sectionHeader}>Rental Management</h3>
+          <div style={styles.twoColumnGrid}>
+            <label style={styles.label}>
+              Management Fee (%)
+              <input
+                type="text"
+                style={styles.input}
+                value={propertyManagementRate}
+                onChange={handleManagementRateChange}
+              />
+            </label>
 
-          <label style={styles.label}>
-            Expected Monthly Rent ($)
-            <input
-              type="text"
-              style={styles.input}
-              value={monthlyRent}
-              onChange={handleRentChange}
-            />
-          </label>
-
-          <label style={styles.label}>
-            Property Management Fee (%)
-            <input
-              type="text"
-              style={styles.input}
-              value={propertyManagementRate}
-              onChange={handleManagementRateChange}
-            />
-          </label>
-
-          <label style={styles.label}>
-            Monthly Property Management Fee ($)
-            <input
-              type="text"
-              style={styles.input}
-              value={propertyManagementFee}
-              onChange={handleManagementFeeChange}
-            />
-          </label>
+            <label style={styles.label}>
+              Monthly Management Fee ($)
+              <input
+                type="text"
+                style={styles.input}
+                value={propertyManagementFee}
+                onChange={handleManagementFeeChange}
+              />
+            </label>
+          </div>
         </div>
 
-        {/* Results Summary */}
+        {/* Results Summary Section */}
         <div style={styles.summaryCard}>
           <h3 style={styles.summaryTitle}>Estimated Monthly Payment</h3>
           <div style={styles.totalAmount}>
@@ -441,9 +444,9 @@ export default function MortgageCalculator() {
             <strong>${calculations.loanAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
           </div>
 
-          {/* RENT ROLL VS MORTGAGE ANALYSIS SECTION */}
           <hr style={styles.divider} />
 
+          {/* RENT ROLL VS MORTGAGE ANALYSIS */}
           <h4 style={styles.rentHeader}>Rent Roll vs. Mortgage</h4>
 
           <div style={styles.breakdownList}>
@@ -483,9 +486,10 @@ export default function MortgageCalculator() {
   );
 }
 
+// Inline Style Configuration
 const styles = {
   container: {
-    maxWidth: '900px',
+    maxWidth: '1000px',
     margin: '0 auto',
     padding: '24px',
     fontFamily: 'system-ui, -apple-system, sans-serif',
@@ -498,18 +502,24 @@ const styles = {
     marginBottom: '32px',
     color: '#111827',
   },
-  grid: {
+  mainLayout: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
     gap: '32px',
   },
-  formGroup: {
+  formContainer: {
     display: 'flex',
     flexDirection: 'column',
+    gap: '8px',
+  },
+  twoColumnGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', // Forces 2 items per line
     gap: '16px',
+    marginBottom: '16px',
   },
   sectionHeader: {
-    margin: '16px 0 8px 0',
+    margin: '12px 0 8px 0',
     fontSize: '18px',
     borderBottom: '1px solid #e5e7eb',
     paddingBottom: '4px',
@@ -527,10 +537,12 @@ const styles = {
     padding: '10px 12px',
     borderRadius: '6px',
     border: '1px solid #d1d5db',
-    fontSize: '16px',
+    fontSize: '15px',
     backgroundColor: '#ffffff',
     color: '#111827',
     outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box',
   },
   downPaymentContainer: {
     display: 'flex',
@@ -552,14 +564,16 @@ const styles = {
     background: '#f3f4f6',
     color: '#374151',
     border: 'none',
-    padding: '4px 12px',
+    padding: '2px 8px',
+    fontSize: '12px',
     cursor: 'pointer',
   },
   activeToggle: {
     background: '#2563eb',
     color: '#ffffff',
     border: 'none',
-    padding: '4px 12px',
+    padding: '2px 8px',
+    fontSize: '12px',
     cursor: 'pointer',
   },
   summaryCard: {
