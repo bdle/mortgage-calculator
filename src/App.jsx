@@ -18,11 +18,10 @@ export default function MortgageCalculator() {
   const [hoaFee, setHoaFee] = useState('0');
   const [yearlyWaterCost, setYearlyWaterCost] = useState('960');
 
-  const [monthlyRent, setMonthlyRent] = useState('3,500');
+  const [monthlyRent, setMonthlyRent] = useState('0');
   const [propertyManagementRate, setPropertyManagementRate] = useState('4');
   const [propertyManagementFee, setPropertyManagementFee] = useState('140');
 
-  // Unified Handler Logic
   const handlePriceChange = (e) => {
     const rawVal = parseUSNumber(e.target.value);
     if (rawVal === '') {
@@ -72,7 +71,6 @@ export default function MortgageCalculator() {
     setPropertyManagementFee(formatUSNumber(((rent * (Number(rawVal) || 0)) / 100).toFixed(2)));
   };
 
-  // Compute calculated metrics via custom hook
   const calculations = useMortgageCalculator({
     purchasePrice,
     downPaymentType,
@@ -94,10 +92,12 @@ export default function MortgageCalculator() {
 
       <div style={styles.mainLayout}>
         <div style={styles.formContainer}>
-          {/* LOAN DETAILS SECTION */}
+          {/* LOAN DETAILS */}
           <h3 style={styles.sectionHeader}>Loan Details</h3>
           <div style={styles.twoColumnGrid}>
             <FormInput label="Purchase Price" prefix="$" value={purchasePrice} onChange={handlePriceChange} />
+
+            {/* TOGGLEABLE DOWN PAYMENT FIELD */}
             <div style={styles.downPaymentContainer}>
               <div style={styles.downPaymentHeader}>
                 <label style={styles.label}>Down Payment</label>
@@ -133,13 +133,15 @@ export default function MortgageCalculator() {
                 />
               )}
             </div>
+
             <FormInput label="Interest Rate" suffix="%" value={interestRate} onChange={(e) => setInterestRate(e.target.value)} />
+
             <label style={styles.selectLabel}>
               Loan Term
               <select style={styles.select} value={loanTermYears} onChange={(e) => setLoanTermYears(Number(e.target.value))}>
-                <option value={15}>15 Years</option>
-                <option value={20}>20 Years</option>
-                <option value={30}>30 Years</option>
+                <option style={styles.option} value={15}>15 Years</option>
+                <option style={styles.option} value={20}>20 Years</option>
+                <option style={styles.option} value={30}>30 Years</option>
               </select>
             </label>
           </div>
@@ -208,23 +210,73 @@ export default function MortgageCalculator() {
 }
 
 const styles = {
-  container: { maxWidth: '1000px', margin: '0 auto', padding: '24px', fontFamily: 'system-ui, sans-serif', color: '#212529' },
-  title: { textAlign: 'center', marginBottom: '32px', color: '#111827' },
-  mainLayout: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '32px' },
-  formContainer: { display: 'flex', flexDirection: 'column', gap: '8px' },
-  twoColumnGrid: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '16px', marginBottom: '16px' },
-  sectionHeader: { margin: '12px 0 8px 0', fontSize: '18px', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', textAlign: 'left' },
-  selectLabel: { display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '14px', fontWeight: '500', color: '#374151', textAlign: 'left' },
-  select: { padding: '10px 12px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '15px', backgroundColor: '#ffffff', color: '#111827', width: '100%' },
-  summaryCard: { background: '#f9fafb', borderRadius: '8px', padding: '24px', border: '1px solid #e5e7eb', height: 'fit-content' },
-  summaryTitle: { margin: '0 0 12px 0', fontSize: '18px', textAlign: 'center' },
-  totalAmount: { fontSize: '36px', fontWeight: 'bold', color: '#2563eb', textAlign: 'center', marginBottom: '24px' },
-  breakdownList: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  divider: { margin: '16px 0', border: 'none', borderTop: '1px solid #e5e7eb' },
-  rentHeader: { margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600', textAlign: 'left' },
-  cashFlowBox: { marginTop: '16px', padding: '16px', borderRadius: '8px', borderWidth: '1px', borderStyle: 'solid', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' },
-  cashFlowLabel: { fontSize: '13px', fontWeight: '600', textTransform: 'uppercase', color: '#4b5563' },
-  cashFlowAmount: { fontSize: '28px', fontWeight: '800' },
+  container: {
+    maxWidth: '1000px',
+    margin: '0 auto',
+    padding: '24px',
+    fontFamily: 'system-ui, -apple-system, sans-serif',
+    color: '#111827',           // Fixed high-contrast text color
+    backgroundColor: '#ffffff', // Fixed white background for dark mode compatibility
+    borderRadius: '12px',
+  },
+  title: {
+    textAlign: 'center',
+    marginBottom: '32px',
+    color: '#111827',
+  },
+  mainLayout: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+    gap: '32px',
+  },
+  formContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  twoColumnGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    gap: '16px',
+    marginBottom: '16px',
+  },
+  sectionHeader: {
+    margin: '12px 0 8px 0',
+    fontSize: '18px',
+    borderBottom: '1px solid #e5e7eb',
+    paddingBottom: '4px',
+    textAlign: 'left',
+    color: '#111827',
+  },
+  label: {
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#374151',
+    textAlign: 'left',
+  },
+  selectLabel: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#374151',
+    textAlign: 'left',
+  },
+  select: {
+    padding: '10px 12px',
+    borderRadius: '6px',
+    border: '1px solid #d1d5db',
+    fontSize: '15px',
+    backgroundColor: '#ffffff', // Fixed select background
+    color: '#111827',           // Fixed select text color
+    width: '100%',
+    outline: 'none',
+  },
+  option: {
+    backgroundColor: '#ffffff', // Fixed option background
+    color: '#111827',           // Fixed option text color
+  },
   downPaymentContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -257,5 +309,72 @@ const styles = {
     fontSize: '12px',
     cursor: 'pointer',
   },
-  statusBadge: { color: '#ffffff', padding: '4px 12px', borderRadius: '9999px', fontSize: '12px', fontWeight: '600', marginTop: '4px' },
+  summaryCard: {
+    background: '#f9fafb',
+    borderRadius: '8px',
+    padding: '24px',
+    border: '1px solid #e5e7eb',
+    height: 'fit-content',
+    color: '#111827',
+  },
+  summaryTitle: {
+    margin: '0 0 12px 0',
+    fontSize: '18px',
+    textAlign: 'center',
+    color: '#111827',
+  },
+  totalAmount: {
+    fontSize: '36px',
+    fontWeight: 'bold',
+    color: '#2563eb',
+    textAlign: 'center',
+    marginBottom: '24px',
+  },
+  breakdownList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  },
+  divider: {
+    margin: '16px 0',
+    border: 'none',
+    borderTop: '1px solid #e5e7eb',
+  },
+  rentHeader: {
+    margin: '0 0 12px 0',
+    fontSize: '16px',
+    fontWeight: '600',
+    textAlign: 'left',
+    color: '#111827',
+  },
+  cashFlowBox: {
+    marginTop: '16px',
+    padding: '16px',
+    borderRadius: '8px',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '6px',
+  },
+  cashFlowLabel: {
+    fontSize: '13px',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    color: '#4b5563',
+  },
+  cashFlowAmount: {
+    fontSize: '28px',
+    fontWeight: '800',
+  },
+  statusBadge: {
+    color: '#ffffff',
+    padding: '4px 12px',
+    borderRadius: '9999px',
+    fontSize: '12px',
+    fontWeight: '600',
+    marginTop: '4px',
+  },
 };
