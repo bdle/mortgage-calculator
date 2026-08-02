@@ -1,76 +1,132 @@
 import React, { useState, useMemo } from 'react';
 
+// Helper to format numbers with US locale comma separators (e.g. 400000 -> "400,000")
+const formatUSNumber = (val) => {
+  if (val === '' || val === undefined || isNaN(val)) return '';
+  const parts = val.toString().split('.');
+  parts[0] = Number(parts[0]).toLocaleString('en-US');
+  return parts.join('.');
+};
+
+// Helper to strip non-digit characters (except decimal) before updating state
+const parseUSNumber = (val) => {
+  if (val === '') return '';
+  const clean = val.replace(/,/g, '');
+  if (isNaN(clean)) return '';
+  return clean;
+};
+
 export default function MortgageCalculator() {
-  const DEFAULT_PURCHASE_PRICE = 1600000;
   // Core Loan Inputs
-  const [purchasePrice, setPurchasePrice] = useState(DEFAULT_PURCHASE_PRICE);
-  const [downPaymentType, setDownPaymentType] = useState('percent'); // 'percent' | 'amount'
-  const [downPaymentPercent, setDownPaymentPercent] = useState(20);
-  const [downPaymentAmount, setDownPaymentAmount] = useState(80000);
-  const [interestRate, setInterestRate] = useState(6.5); // %
+  const [purchasePrice, setPurchasePrice] = useState('400,000');
+  const [downPaymentType, setDownPaymentType] = useState('percent');
+  const [downPaymentPercent, setDownPaymentPercent] = useState('20');
+  const [downPaymentAmount, setDownPaymentAmount] = useState('80,000');
+  const [interestRate, setInterestRate] = useState('6.5');
   const [loanTermYears, setLoanTermYears] = useState(30);
 
+  // Property Tax Rate ($ per $1,000)
+  const [taxRatePerThousand, setTaxRatePerThousand] = useState('12.40');
+
   // Additional Monthly & Yearly Expenses
-  // Tax Rate: $12.40 per $1,000 of purchase price
-  const TAX_RATE_PER_THOUSAND = 12.40;
-  const [taxRatePerThousand, setTaxRatePerThousand] = useState(TAX_RATE_PER_THOUSAND);
+  const [yearlyPropertyTax, setYearlyPropertyTax] = useState('4,960');
+  const [yearlyInsurance, setYearlyInsurance] = useState('1,200');
+  const [hoaFee, setHoaFee] = useState('150');
+  const [waterUtility, setWaterUtility] = useState('80');
+  const [propertyManagementFee, setPropertyManagementFee] = useState('100');
 
-  // Default property tax set to $4,960 based on $400,000 purchase price ($12.40 per $1,000)
-  const [yearlyPropertyTax, setYearlyPropertyTax] = useState((DEFAULT_PURCHASE_PRICE / 1000) * taxRatePerThousand);
+  // Purchase Price Change Handler
+  const handlePriceChange = (e) => {
+    const rawVal = parseUSNumber(e.target.value);
+    if (rawVal === '') {
+      setPurchasePrice('');
+      setYearlyPropertyTax('');
+      setDownPaymentAmount('');
+      return;
+    }
 
-  const [yearlyInsurance, setYearlyInsurance] = useState(1200);
-  const [hoaFee, setHoaFee] = useState(150); // Monthly
-  const [waterUtility, setWaterUtility] = useState(80); // Monthly
-  const [propertyManagementFee, setPropertyManagementFee] = useState(100); // Monthly
+    const price = Math.max(0, Number(rawVal));
+    setPurchasePrice(formatUSNumber(price));
 
-  // Handlers for Down Payment sync
-  const handlePriceChange = (val) => {
-    const price = Math.max(0, val);
-
-    setPurchasePrice(price);
-    // Recalculate Property Tax based on current tax rate
-    setYearlyPropertyTax((price / 1000) * taxRatePerThousand);
+    const rate = taxRatePerThousand === '' ? 0 : Number(parseUSNumber(taxRatePerThousand));
+    const calculatedTax = (price / 1000) * rate;
+    setYearlyPropertyTax(formatUSNumber(calculatedTax.toFixed(2)));
 
     if (downPaymentType === 'percent') {
-      setDownPaymentAmount((price * downPaymentPercent) / 100);
+      const pct = downPaymentPercent === '' ? 0 : Number(parseUSNumber(downPaymentPercent));
+      setDownPaymentAmount(formatUSNumber(((price * pct) / 100).toFixed(0)));
     } else {
-      setDownPaymentPercent(price > 0 ? (downPaymentAmount / price) * 100 : 0);
+      const amt = downPaymentAmount === '' ? 0 : Number(parseUSNumber(downPaymentAmount));
+      setDownPaymentPercent(price > 0 ? ((amt / price) * 100).toFixed(2) : '0');
     }
   };
 
-  // Handler for Property Tax Rate Change ($ per $1,000)
-  const handleTaxRateChange = (rate) => {
-    const validRate = Math.max(0, rate);
-    setTaxRatePerThousand(validRate);
+  // Tax Rate Change Handler
+  const handleTaxRateChange = (e) => {
+    const rawVal = e.target.value;
+    if (rawVal === '') {
+      setTaxRatePerThousand('');
+      setYearlyPropertyTax('0');
+      return;
+    }
 
-    // Dynamically update Property Tax value when Tax Rate changes:
-    // Property Tax = (Purchase Price / 1,000) * Tax Rate
-    setYearlyPropertyTax((purchasePrice / 1000) * validRate);
+    setTaxRatePerThousand(rawVal);
+    const rate = Math.max(0, Number(rawVal));
+    const price = purchasePrice === '' ? 0 : Number(parseUSNumber(purchasePrice));
+    const calculatedTax = (price / 1000) * rate;
+    setYearlyPropertyTax(formatUSNumber(calculatedTax.toFixed(2)));
   };
 
-  const handlePercentChange = (val) => {
-    const pct = Math.max(0, Math.min(100, val));
-    setDownPaymentPercent(pct);
-    setDownPaymentAmount((purchasePrice * pct) / 100);
+  // Down Payment Handlers
+  const handlePercentChange = (e) => {
+    const rawVal = e.target.value;
+    if (rawVal === '') {
+      setDownPaymentPercent('');
+      setDownPaymentAmount('0');
+      return;
+    }
+
+    const pct = Math.max(0, Math.min(100, Number(rawVal)));
+    setDownPaymentPercent(rawVal);
+
+    const price = purchasePrice === '' ? 0 : Number(parseUSNumber(purchasePrice));
+    setDownPaymentAmount(formatUSNumber(((price * pct) / 100).toFixed(0)));
   };
 
-  const handleAmountChange = (val) => {
-    const amt = Math.max(0, val);
-    setDownPaymentAmount(amt);
-    setDownPaymentPercent(purchasePrice > 0 ? (amt / purchasePrice) * 100 : 0);
+  const handleAmountChange = (e) => {
+    const rawVal = parseUSNumber(e.target.value);
+    if (rawVal === '') {
+      setDownPaymentAmount('');
+      setDownPaymentPercent('0');
+      return;
+    }
+
+    const amt = Math.max(0, Number(rawVal));
+    setDownPaymentAmount(formatUSNumber(amt));
+
+    const price = purchasePrice === '' ? 0 : Number(parseUSNumber(purchasePrice));
+    setDownPaymentPercent(price > 0 ? ((amt / price) * 100).toFixed(2) : '0');
   };
 
-  // Calculations
+  // Calculations Memo
   const calculations = useMemo(() => {
-    const actualDownPayment = downPaymentType === 'percent'
-      ? (purchasePrice * downPaymentPercent) / 100
-      : downPaymentAmount;
+    const price = purchasePrice === '' ? 0 : Number(parseUSNumber(purchasePrice));
+    const pct = downPaymentPercent === '' ? 0 : Number(parseUSNumber(downPaymentPercent));
+    const dpAmt = downPaymentAmount === '' ? 0 : Number(parseUSNumber(downPaymentAmount));
+    const rate = interestRate === '' ? 0 : Number(parseUSNumber(interestRate));
+    const term = Number(loanTermYears) || 0;
 
-    const loanAmount = Math.max(0, purchasePrice - actualDownPayment);
-    const monthlyInterestRate = interestRate / 100 / 12;
-    const totalPayments = loanTermYears * 12;
+    const tax = yearlyPropertyTax === '' ? 0 : Number(parseUSNumber(yearlyPropertyTax));
+    const ins = yearlyInsurance === '' ? 0 : Number(parseUSNumber(yearlyInsurance));
+    const hoa = hoaFee === '' ? 0 : Number(parseUSNumber(hoaFee));
+    const water = waterUtility === '' ? 0 : Number(parseUSNumber(waterUtility));
+    const pm = propertyManagementFee === '' ? 0 : Number(parseUSNumber(propertyManagementFee));
 
-    // Principal & Interest Formula: M = P [ i(1 + i)^n ] / [ (1 + i)^n – 1 ]
+    const actualDownPayment = downPaymentType === 'percent' ? (price * pct) / 100 : dpAmt;
+    const loanAmount = Math.max(0, price - actualDownPayment);
+    const monthlyInterestRate = rate / 100 / 12;
+    const totalPayments = term * 12;
+
     let monthlyPrincipalAndInterest = 0;
     if (monthlyInterestRate > 0 && totalPayments > 0) {
       monthlyPrincipalAndInterest =
@@ -81,16 +137,11 @@ export default function MortgageCalculator() {
       monthlyPrincipalAndInterest = loanAmount / totalPayments;
     }
 
-    const monthlyTax = yearlyPropertyTax / 12;
-    const monthlyInsurance = yearlyInsurance / 12;
+    const monthlyTax = tax / 12;
+    const monthlyInsurance = ins / 12;
 
     const totalMonthlyPayment =
-      monthlyPrincipalAndInterest +
-      monthlyTax +
-      monthlyInsurance +
-      hoaFee +
-      waterUtility +
-      propertyManagementFee;
+      monthlyPrincipalAndInterest + monthlyTax + monthlyInsurance + hoa + water + pm;
 
     return {
       loanAmount,
@@ -125,10 +176,10 @@ export default function MortgageCalculator() {
           <label style={styles.label}>
             Purchase Price ($)
             <input
-              type="number"
+              type="text"
               style={styles.input}
               value={purchasePrice}
-              onChange={(e) => handlePriceChange(Number(e.target.value))}
+              onChange={handlePriceChange}
             />
           </label>
 
@@ -155,17 +206,17 @@ export default function MortgageCalculator() {
 
             {downPaymentType === 'percent' ? (
               <input
-                type="number"
+                type="text"
                 style={styles.input}
-                value={Number(downPaymentPercent.toFixed(2))}
-                onChange={(e) => handlePercentChange(Number(e.target.value))}
+                value={downPaymentPercent}
+                onChange={handlePercentChange}
               />
             ) : (
               <input
-                type="number"
+                type="text"
                 style={styles.input}
                 value={downPaymentAmount}
-                onChange={(e) => handleAmountChange(Number(e.target.value))}
+                onChange={handleAmountChange}
               />
             )}
           </div>
@@ -173,11 +224,10 @@ export default function MortgageCalculator() {
           <label style={styles.label}>
             Interest Rate (%)
             <input
-              type="number"
-              step="0.1"
+              type="text"
               style={styles.input}
               value={interestRate}
-              onChange={(e) => setInterestRate(Number(e.target.value))}
+              onChange={(e) => setInterestRate(e.target.value)}
             />
           </label>
 
@@ -199,95 +249,95 @@ export default function MortgageCalculator() {
           <label style={styles.label}>
             Property Tax Rate ($ per $1,000)
             <input
-              type="number"
-              step="0.1"
+              type="text"
               style={styles.input}
               value={taxRatePerThousand}
-              onChange={(e) => handleTaxRateChange(Number(e.target.value))}
+              onChange={handleTaxRateChange}
             />
           </label>
+
           <label style={styles.label}>
             Yearly Property Tax ($)
             <input
-              type="number"
+              type="text"
               style={styles.input}
               value={yearlyPropertyTax}
-              onChange={(e) => setYearlyPropertyTax(Number(e.target.value))}
+              onChange={(e) => setYearlyPropertyTax(formatUSNumber(parseUSNumber(e.target.value)))}
             />
           </label>
 
           <label style={styles.label}>
             Yearly Insurance ($)
             <input
-              type="number"
+              type="text"
               style={styles.input}
               value={yearlyInsurance}
-              onChange={(e) => setYearlyInsurance(Number(e.target.value))}
+              onChange={(e) => setYearlyInsurance(formatUSNumber(parseUSNumber(e.target.value)))}
             />
           </label>
 
           <label style={styles.label}>
             Monthly HOA Fee ($)
             <input
-              type="number"
+              type="text"
               style={styles.input}
               value={hoaFee}
-              onChange={(e) => setHoaFee(Number(e.target.value))}
+              onChange={(e) => setHoaFee(formatUSNumber(parseUSNumber(e.target.value)))}
             />
           </label>
 
           <label style={styles.label}>
             Monthly Water Utility ($)
             <input
-              type="number"
+              type="text"
               style={styles.input}
               value={waterUtility}
-              onChange={(e) => setWaterUtility(Number(e.target.value))}
+              onChange={(e) => setWaterUtility(formatUSNumber(parseUSNumber(e.target.value)))}
             />
           </label>
 
           <label style={styles.label}>
             Monthly Property Management Fee ($)
             <input
-              type="number"
+              type="text"
               style={styles.input}
               value={propertyManagementFee}
-              onChange={(e) => setPropertyManagementFee(Number(e.target.value))}
+              onChange={(e) => setPropertyManagementFee(formatUSNumber(parseUSNumber(e.target.value)))}
             />
           </label>
         </div>
 
-        {/* Results Summary */}
+        {/* Results Summary with US Locale Currency Formatting */}
         <div style={styles.summaryCard}>
           <h3 style={styles.summaryTitle}>Estimated Monthly Payment</h3>
           <div style={styles.totalAmount}>
-            ${calculations.totalMonthlyPayment.toFixed(2)}
+            ${calculations.totalMonthlyPayment.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
 
           <div style={styles.breakdownList}>
             <div style={styles.breakdownItem}>
               <span>Principal & Interest:</span>
-              <strong>${calculations.monthlyPrincipalAndInterest.toFixed(2)}</strong>
+              <strong>${calculations.monthlyPrincipalAndInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
             </div>
             <div style={styles.breakdownItem}>
               <span>Property Tax:</span>
-              <strong>${calculations.monthlyTax.toFixed(2)}</strong>
+              <strong>${calculations.monthlyTax.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
             </div>
             <div style={styles.breakdownItem}>
               <span>Insurance:</span>
-              <strong>${calculations.monthlyInsurance.toFixed(2)}</strong>
+              <strong>${calculations.monthlyInsurance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
             </div>
             <div style={styles.breakdownItem}>
               <span>HOA Fee:</span>
-              <strong>${hoaFee.toFixed(2)}</strong>
+              <strong>${(Number(parseUSNumber(hoaFee)) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
             </div>
             <div style={styles.breakdownItem}>
               <span>Water Utility:</span>
-              <strong>${waterUtility.toFixed(2)}</strong>
+              <strong>${(Number(parseUSNumber(waterUtility)) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
             </div>
             <div style={styles.breakdownItem}>
               <span>Property Management:</span>
-              <strong>${propertyManagementFee.toFixed(2)}</strong>
+              <strong>${(Number(parseUSNumber(propertyManagementFee)) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
             </div>
           </div>
 
@@ -295,7 +345,7 @@ export default function MortgageCalculator() {
 
           <div style={styles.breakdownItem}>
             <span>Total Loan Amount:</span>
-            <strong>${calculations.loanAmount.toFixed(2)}</strong>
+            <strong>${calculations.loanAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
           </div>
         </div>
       </div>
@@ -303,7 +353,6 @@ export default function MortgageCalculator() {
   );
 }
 
-// Updated Styles for High-Contrast Light Theme Baseline
 const styles = {
   container: {
     maxWidth: '900px',
