@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 
-// Helper to format numbers with US locale comma separators (e.g., 400000 -> "400,000")
+// Helper to format numbers with US locale comma separators (e.g., 400000 -> "400,000") [cite: 61, 75]
 const formatUSNumber = (val) => {
   if (val === '' || val === undefined || isNaN(val)) return '';
   const parts = val.toString().split('.');
@@ -8,7 +8,7 @@ const formatUSNumber = (val) => {
   return parts.join('.');
 };
 
-// Helper to strip non-digit characters (except decimal) before updating state
+// Helper to strip non-digit characters (except decimal) before updating state [cite: 41]
 const parseUSNumber = (val) => {
   if (val === '') return '';
   const clean = val.replace(/,/g, '');
@@ -17,7 +17,7 @@ const parseUSNumber = (val) => {
 };
 
 export default function MortgageCalculator() {
-  // Core Loan Inputs
+  // Core Loan Inputs [cite: 1, 2]
   const [purchasePrice, setPurchasePrice] = useState('400,000');
   const [downPaymentType, setDownPaymentType] = useState('percent');
   const [downPaymentPercent, setDownPaymentPercent] = useState('20');
@@ -25,21 +25,26 @@ export default function MortgageCalculator() {
   const [interestRate, setInterestRate] = useState('6.5');
   const [loanTermYears, setLoanTermYears] = useState(30);
 
-  // Property Tax Rate ($ per $1,000)
+  // Property Tax Rate ($ per $1,000) [cite: 22, 24, 38, 76]
   const [taxRatePerThousand, setTaxRatePerThousand] = useState('12.40');
 
-  // Additional Monthly & Yearly Expenses
+  // Additional Monthly & Yearly Expenses [cite: 1, 55, 78]
   const [yearlyPropertyTax, setYearlyPropertyTax] = useState('4,960');
   const [yearlyInsurance, setYearlyInsurance] = useState('1,200');
-  const [hoaFee, setHoaFee] = useState('150');
+  const [hoaFee, setHoaFee] = useState('0');
   const [yearlyWaterCost, setYearlyWaterCost] = useState('960');
 
-  // Rental Income & Management Fee (%)
+  // Rental Income & Management Fee (%) [cite: 45, 51, 77]
   const [monthlyRent, setMonthlyRent] = useState('3,500');
-  const [propertyManagementRate, setPropertyManagementRate] = useState('8');
-  const [propertyManagementFee, setPropertyManagementFee] = useState('280');
+  const [propertyManagementRate, setPropertyManagementRate] = useState('4');
+  const [propertyManagementFee, setPropertyManagementFee] = useState('140');
 
-  // Purchase Price Change Handler
+  // Helper to handle auto-selecting input text on click/focus
+  const handleInputFocus = (e) => {
+    e.target.select();
+  };
+
+  // Purchase Price Change Handler [cite: 23, 25, 39, 40]
   const handlePriceChange = (e) => {
     const rawVal = parseUSNumber(e.target.value);
     if (rawVal === '') {
@@ -65,7 +70,7 @@ export default function MortgageCalculator() {
     }
   };
 
-  // Tax Rate Change Handler
+  // Tax Rate Change Handler [cite: 24, 25, 39, 40]
   const handleTaxRateChange = (e) => {
     const rawVal = e.target.value;
     if (rawVal === '') {
@@ -81,7 +86,7 @@ export default function MortgageCalculator() {
     setYearlyPropertyTax(formatUSNumber(calculatedTax.toFixed(2)));
   };
 
-  // Down Payment Handlers
+  // Down Payment Handlers [cite: 2]
   const handlePercentChange = (e) => {
     const rawVal = e.target.value;
     if (rawVal === '') {
@@ -112,7 +117,7 @@ export default function MortgageCalculator() {
     setDownPaymentPercent(price > 0 ? ((amt / price) * 100).toFixed(2) : '0');
   };
 
-  // Monthly Rent Change Handler
+  // Monthly Rent Change Handler [cite: 45, 51, 52, 54]
   const handleRentChange = (e) => {
     const rawVal = parseUSNumber(e.target.value);
     if (rawVal === '') {
@@ -129,7 +134,7 @@ export default function MortgageCalculator() {
     setPropertyManagementFee(formatUSNumber(calculatedFee.toFixed(2)));
   };
 
-  // Property Management Rate (%) Handler
+  // Property Management Rate (%) Handler [cite: 51, 52, 54]
   const handleManagementRateChange = (e) => {
     const rawVal = e.target.value;
     if (rawVal === '') {
@@ -146,7 +151,7 @@ export default function MortgageCalculator() {
     setPropertyManagementFee(formatUSNumber(calculatedFee.toFixed(2)));
   };
 
-  // Manual Property Management Fee ($) override handler
+  // Manual Property Management Fee ($) override handler [cite: 51, 52]
   const handleManagementFeeChange = (e) => {
     const rawVal = parseUSNumber(e.target.value);
     if (rawVal === '') {
@@ -163,7 +168,7 @@ export default function MortgageCalculator() {
     setPropertyManagementRate(calculatedRate.toFixed(2));
   };
 
-  // Calculations Memo
+  // Calculations Memo [cite: 2, 28, 42, 46, 56]
   const calculations = useMemo(() => {
     const price = purchasePrice === '' ? 0 : Number(parseUSNumber(purchasePrice));
     const pct = downPaymentPercent === '' ? 0 : Number(parseUSNumber(downPaymentPercent));
@@ -175,7 +180,7 @@ export default function MortgageCalculator() {
     const ins = yearlyInsurance === '' ? 0 : Number(parseUSNumber(yearlyInsurance));
     const hoa = hoaFee === '' ? 0 : Number(parseUSNumber(hoaFee));
 
-    // Convert Yearly Water Cost into Monthly Expense
+    // Convert Yearly Water Cost into Monthly Expense [cite: 56, 78]
     const yearlyWater = yearlyWaterCost === '' ? 0 : Number(parseUSNumber(yearlyWaterCost));
     const monthlyWater = yearlyWater / 12;
 
@@ -239,7 +244,7 @@ export default function MortgageCalculator() {
       <div style={styles.mainLayout}>
         {/* Input Form Section */}
         <div style={styles.formContainer}>
-          {/* LOAN DETAILS SECTION */}
+          {/* LOAN DETAILS SECTION [cite: 1, 2, 73] */}
           <h3 style={styles.sectionHeader}>Loan Details</h3>
           <div style={styles.twoColumnGrid}>
             <label style={styles.label}>
@@ -251,6 +256,7 @@ export default function MortgageCalculator() {
                   style={styles.inputWithPrefix}
                   value={purchasePrice}
                   onChange={handlePriceChange}
+                  onFocus={handleInputFocus}
                 />
               </div>
             </label>
@@ -283,6 +289,7 @@ export default function MortgageCalculator() {
                     style={styles.inputWithSuffix}
                     value={downPaymentPercent}
                     onChange={handlePercentChange}
+                    onFocus={handleInputFocus}
                   />
                   <span style={styles.suffix}>%</span>
                 </div>
@@ -294,6 +301,7 @@ export default function MortgageCalculator() {
                     style={styles.inputWithPrefix}
                     value={downPaymentAmount}
                     onChange={handleAmountChange}
+                    onFocus={handleInputFocus}
                   />
                 </div>
               )}
@@ -307,6 +315,7 @@ export default function MortgageCalculator() {
                   style={styles.inputWithSuffix}
                   value={interestRate}
                   onChange={(e) => setInterestRate(e.target.value)}
+                  onFocus={handleInputFocus}
                 />
                 <span style={styles.suffix}>%</span>
               </div>
@@ -326,7 +335,7 @@ export default function MortgageCalculator() {
             </label>
           </div>
 
-          {/* TAXES & ADDITIONAL FEES SECTION */}
+          {/* TAXES & ADDITIONAL FEES SECTION [cite: 1, 24, 45, 55] */}
           <h3 style={styles.sectionHeader}>Taxes & Additional Fees</h3>
           <div style={styles.twoColumnGrid}>
             <label style={styles.label}>
@@ -338,6 +347,7 @@ export default function MortgageCalculator() {
                   style={styles.inputWithLongSuffix}
                   value={taxRatePerThousand}
                   onChange={handleTaxRateChange}
+                  onFocus={handleInputFocus}
                 />
                 <span style={styles.suffix}>per $1,000</span>
               </div>
@@ -352,6 +362,7 @@ export default function MortgageCalculator() {
                   style={styles.inputWithPrefix}
                   value={yearlyPropertyTax}
                   onChange={(e) => setYearlyPropertyTax(formatUSNumber(parseUSNumber(e.target.value)))}
+                  onFocus={handleInputFocus}
                 />
               </div>
             </label>
@@ -365,6 +376,7 @@ export default function MortgageCalculator() {
                   style={styles.inputWithPrefix}
                   value={yearlyInsurance}
                   onChange={(e) => setYearlyInsurance(formatUSNumber(parseUSNumber(e.target.value)))}
+                  onFocus={handleInputFocus}
                 />
               </div>
             </label>
@@ -378,6 +390,7 @@ export default function MortgageCalculator() {
                   style={styles.inputWithPrefix}
                   value={hoaFee}
                   onChange={(e) => setHoaFee(formatUSNumber(parseUSNumber(e.target.value)))}
+                  onFocus={handleInputFocus}
                 />
               </div>
             </label>
@@ -391,6 +404,7 @@ export default function MortgageCalculator() {
                   style={styles.inputWithPrefix}
                   value={yearlyWaterCost}
                   onChange={(e) => setYearlyWaterCost(formatUSNumber(parseUSNumber(e.target.value)))}
+                  onFocus={handleInputFocus}
                 />
               </div>
             </label>
@@ -404,29 +418,31 @@ export default function MortgageCalculator() {
                   style={styles.inputWithPrefix}
                   value={monthlyRent}
                   onChange={handleRentChange}
+                  onFocus={handleInputFocus}
                 />
               </div>
             </label>
           </div>
 
-          {/* RENTAL MANAGEMENT SECTION */}
+          {/* RENTAL MANAGEMENT SECTION [cite: 51, 77] */}
           <h3 style={styles.sectionHeader}>Rental Management</h3>
           <div style={styles.twoColumnGrid}>
             <label style={styles.label}>
-              Management Fee (%)
+              Property Management Fee (%)
               <div style={styles.inputWrapper}>
                 <input
                   type="text"
                   style={styles.inputWithSuffix}
                   value={propertyManagementRate}
                   onChange={handleManagementRateChange}
+                  onFocus={handleInputFocus}
                 />
                 <span style={styles.suffix}>%</span>
               </div>
             </label>
 
             <label style={styles.label}>
-              Monthly Management Fee ($)
+              Monthly Property Management Fee ($)
               <div style={styles.inputWrapper}>
                 <span style={styles.prefix}>$</span>
                 <input
@@ -434,13 +450,14 @@ export default function MortgageCalculator() {
                   style={styles.inputWithPrefix}
                   value={propertyManagementFee}
                   onChange={handleManagementFeeChange}
+                  onFocus={handleInputFocus}
                 />
               </div>
             </label>
           </div>
         </div>
 
-        {/* Results Summary Section */}
+        {/* Results Summary Section [cite: 46, 47, 48, 62, 79] */}
         <div style={styles.summaryCard}>
           <h3 style={styles.summaryTitle}>Estimated Monthly Payment</h3>
           <div style={styles.totalAmount}>
@@ -483,7 +500,7 @@ export default function MortgageCalculator() {
 
           <hr style={styles.divider} />
 
-          {/* RENT ROLL VS MORTGAGE ANALYSIS */}
+          {/* RENT ROLL VS MORTGAGE ANALYSIS [cite: 46, 47, 48, 79] */}
           <h4 style={styles.rentHeader}>Rent Roll vs. Mortgage</h4>
 
           <div style={styles.breakdownList}>
@@ -523,7 +540,7 @@ export default function MortgageCalculator() {
   );
 }
 
-// Inline Style Configuration
+// Inline Style Configuration [cite: 19, 20, 70, 73, 92]
 const styles = {
   container: {
     maxWidth: '1000px',
@@ -561,6 +578,7 @@ const styles = {
     borderBottom: '1px solid #e5e7eb',
     paddingBottom: '4px',
     color: '#111827',
+    textAlign: 'left',
   },
   label: {
     display: 'flex',
@@ -569,11 +587,14 @@ const styles = {
     fontSize: '14px',
     fontWeight: '500',
     color: '#374151',
+    textAlign: 'left',
+    alignItems: 'stretch',
   },
   inputWrapper: {
     position: 'relative',
     display: 'flex',
     alignItems: 'center',
+    width: '100%',
   },
   prefix: {
     position: 'absolute',
@@ -601,6 +622,7 @@ const styles = {
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
+    textAlign: 'left',
   },
   inputWithPrefix: {
     padding: '10px 12px 10px 26px',
@@ -612,6 +634,7 @@ const styles = {
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
+    textAlign: 'left',
   },
   inputWithSuffix: {
     padding: '10px 26px 10px 12px',
@@ -623,9 +646,10 @@ const styles = {
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
+    textAlign: 'left',
   },
   inputWithLongSuffix: {
-    padding: '10px 85px 10px 26px', // Extra padding right for "per $1,000"
+    padding: '10px 85px 10px 26px',
     borderRadius: '6px',
     border: '1px solid #d1d5db',
     fontSize: '15px',
@@ -634,6 +658,7 @@ const styles = {
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
+    textAlign: 'left',
   },
   downPaymentContainer: {
     display: 'flex',
@@ -709,6 +734,7 @@ const styles = {
     fontSize: '16px',
     fontWeight: '600',
     color: '#111827',
+    textAlign: 'left',
   },
   cashFlowBox: {
     marginTop: '16px',
