@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 
-// Helper to format numbers with US locale comma separators (e.g., 400000 -> "400,000") [cite: 30]
+// Helper to format numbers with US locale comma separators (e.g., 400000 -> "400,000")
 const formatUSNumber = (val) => {
   if (val === '' || val === undefined || isNaN(val)) return '';
   const parts = val.toString().split('.');
@@ -8,7 +8,7 @@ const formatUSNumber = (val) => {
   return parts.join('.');
 };
 
-// Helper to strip non-digit characters (except decimal) before updating state [cite: 30]
+// Helper to strip non-digit characters (except decimal) before updating state
 const parseUSNumber = (val) => {
   if (val === '') return '';
   const clean = val.replace(/,/g, '');
@@ -17,7 +17,7 @@ const parseUSNumber = (val) => {
 };
 
 export default function MortgageCalculator() {
-  // Core Loan Inputs [cite: 1, 2]
+  // Core Loan Inputs
   const [purchasePrice, setPurchasePrice] = useState('400,000');
   const [downPaymentType, setDownPaymentType] = useState('percent');
   const [downPaymentPercent, setDownPaymentPercent] = useState('20');
@@ -25,20 +25,23 @@ export default function MortgageCalculator() {
   const [interestRate, setInterestRate] = useState('6.5');
   const [loanTermYears, setLoanTermYears] = useState(30);
 
-  // Property Tax Rate ($ per $1,000) [cite: 22, 23, 24]
+  // Property Tax Rate ($ per $1,000)
   const [taxRatePerThousand, setTaxRatePerThousand] = useState('12.40');
 
-  // Additional Monthly & Yearly Expenses 
+  // Additional Monthly & Yearly Expenses
   const [yearlyPropertyTax, setYearlyPropertyTax] = useState('4,960');
   const [yearlyInsurance, setYearlyInsurance] = useState('1,200');
   const [hoaFee, setHoaFee] = useState('150');
   const [waterUtility, setWaterUtility] = useState('80');
-  const [propertyManagementFee, setPropertyManagementFee] = useState('100');
 
-  // NEW: Expected Monthly Rent Input
+  // Rental Income & Management Fee (%)
   const [monthlyRent, setMonthlyRent] = useState('3,500');
+  const [propertyManagementRate, setPropertyManagementRate] = useState('8'); // Default 8%
 
-  // Purchase Price Change Handler [cite: 23, 25]
+  // Property Management Fee ($) calculated based on Rent * Management Rate %
+  const [propertyManagementFee, setPropertyManagementFee] = useState('280'); // (3500 * 8%) = 280
+
+  // Purchase Price Change Handler
   const handlePriceChange = (e) => {
     const rawVal = parseUSNumber(e.target.value);
     if (rawVal === '') {
@@ -64,7 +67,7 @@ export default function MortgageCalculator() {
     }
   };
 
-  // Tax Rate Change Handler [cite: 24, 25]
+  // Tax Rate Change Handler
   const handleTaxRateChange = (e) => {
     const rawVal = e.target.value;
     if (rawVal === '') {
@@ -80,7 +83,7 @@ export default function MortgageCalculator() {
     setYearlyPropertyTax(formatUSNumber(calculatedTax.toFixed(2)));
   };
 
-  // Down Payment Handlers [cite: 1, 2]
+  // Down Payment Handlers
   const handlePercentChange = (e) => {
     const rawVal = e.target.value;
     if (rawVal === '') {
@@ -109,6 +112,57 @@ export default function MortgageCalculator() {
 
     const price = purchasePrice === '' ? 0 : Number(parseUSNumber(purchasePrice));
     setDownPaymentPercent(price > 0 ? ((amt / price) * 100).toFixed(2) : '0');
+  };
+
+  // Monthly Rent Change Handler (recalculates Property Management Fee)
+  const handleRentChange = (e) => {
+    const rawVal = parseUSNumber(e.target.value);
+    if (rawVal === '') {
+      setMonthlyRent('');
+      setPropertyManagementFee('0');
+      return;
+    }
+
+    const rent = Math.max(0, Number(rawVal));
+    setMonthlyRent(formatUSNumber(rent));
+
+    const rate = propertyManagementRate === '' ? 0 : Number(parseUSNumber(propertyManagementRate));
+    const calculatedFee = (rent * rate) / 100;
+    setPropertyManagementFee(formatUSNumber(calculatedFee.toFixed(2)));
+  };
+
+  // Property Management Fee Rate (%) Handler
+  const handleManagementRateChange = (e) => {
+    const rawVal = e.target.value;
+    if (rawVal === '') {
+      setPropertyManagementRate('');
+      setPropertyManagementFee('0');
+      return;
+    }
+
+    const rate = Math.max(0, Number(rawVal));
+    setPropertyManagementRate(rawVal);
+
+    const rent = monthlyRent === '' ? 0 : Number(parseUSNumber(monthlyRent));
+    const calculatedFee = (rent * rate) / 100;
+    setPropertyManagementFee(formatUSNumber(calculatedFee.toFixed(2)));
+  };
+
+  // Manual Property Management Fee ($) override handler
+  const handleManagementFeeChange = (e) => {
+    const rawVal = parseUSNumber(e.target.value);
+    if (rawVal === '') {
+      setPropertyManagementFee('');
+      setPropertyManagementRate('0');
+      return;
+    }
+
+    const fee = Math.max(0, Number(rawVal));
+    setPropertyManagementFee(formatUSNumber(fee));
+
+    const rent = monthlyRent === '' ? 0 : Number(parseUSNumber(monthlyRent));
+    const calculatedRate = rent > 0 ? (fee / rent) * 100 : 0;
+    setPropertyManagementRate(calculatedRate.toFixed(2));
   };
 
   // Calculations Memo
@@ -147,7 +201,6 @@ export default function MortgageCalculator() {
     const totalMonthlyPayment =
       monthlyPrincipalAndInterest + monthlyTax + monthlyInsurance + hoa + water + pm;
 
-    // Rent Roll vs Mortgage calculation
     const netCashFlow = rent - totalMonthlyPayment;
     const isRentCovered = netCashFlow >= 0;
 
@@ -308,17 +361,7 @@ export default function MortgageCalculator() {
             />
           </label>
 
-          <label style={styles.label}>
-            Monthly Property Management Fee ($)
-            <input
-              type="text"
-              style={styles.input}
-              value={propertyManagementFee}
-              onChange={(e) => setPropertyManagementFee(formatUSNumber(parseUSNumber(e.target.value)))}
-            />
-          </label>
-
-          <h3 style={styles.sectionHeader}>Rental Income</h3>
+          <h3 style={styles.sectionHeader}>Rental Income & Management</h3>
 
           <label style={styles.label}>
             Expected Monthly Rent ($)
@@ -326,7 +369,27 @@ export default function MortgageCalculator() {
               type="text"
               style={styles.input}
               value={monthlyRent}
-              onChange={(e) => setMonthlyRent(formatUSNumber(parseUSNumber(e.target.value)))}
+              onChange={handleRentChange}
+            />
+          </label>
+
+          <label style={styles.label}>
+            Property Management Fee (%)
+            <input
+              type="text"
+              style={styles.input}
+              value={propertyManagementRate}
+              onChange={handleManagementRateChange}
+            />
+          </label>
+
+          <label style={styles.label}>
+            Monthly Property Management Fee ($)
+            <input
+              type="text"
+              style={styles.input}
+              value={propertyManagementFee}
+              onChange={handleManagementFeeChange}
             />
           </label>
         </div>
@@ -360,7 +423,7 @@ export default function MortgageCalculator() {
               <strong>${(Number(parseUSNumber(waterUtility)) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
             </div>
             <div style={styles.breakdownItem}>
-              <span>Property Management:</span>
+              <span>Property Management ({propertyManagementRate || 0}%):</span>
               <strong>${(Number(parseUSNumber(propertyManagementFee)) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
             </div>
           </div>
