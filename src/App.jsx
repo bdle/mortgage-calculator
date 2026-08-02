@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 
-// Helper to format numbers with US locale comma separators (e.g. 400000 -> "400,000")
+// Helper to format numbers with US locale comma separators (e.g., 400000 -> "400,000") [cite: 30]
 const formatUSNumber = (val) => {
   if (val === '' || val === undefined || isNaN(val)) return '';
   const parts = val.toString().split('.');
@@ -8,7 +8,7 @@ const formatUSNumber = (val) => {
   return parts.join('.');
 };
 
-// Helper to strip non-digit characters (except decimal) before updating state
+// Helper to strip non-digit characters (except decimal) before updating state [cite: 30]
 const parseUSNumber = (val) => {
   if (val === '') return '';
   const clean = val.replace(/,/g, '');
@@ -17,7 +17,7 @@ const parseUSNumber = (val) => {
 };
 
 export default function MortgageCalculator() {
-  // Core Loan Inputs
+  // Core Loan Inputs [cite: 1, 2]
   const [purchasePrice, setPurchasePrice] = useState('400,000');
   const [downPaymentType, setDownPaymentType] = useState('percent');
   const [downPaymentPercent, setDownPaymentPercent] = useState('20');
@@ -25,17 +25,20 @@ export default function MortgageCalculator() {
   const [interestRate, setInterestRate] = useState('6.5');
   const [loanTermYears, setLoanTermYears] = useState(30);
 
-  // Property Tax Rate ($ per $1,000)
+  // Property Tax Rate ($ per $1,000) [cite: 22, 23, 24]
   const [taxRatePerThousand, setTaxRatePerThousand] = useState('12.40');
 
-  // Additional Monthly & Yearly Expenses
+  // Additional Monthly & Yearly Expenses 
   const [yearlyPropertyTax, setYearlyPropertyTax] = useState('4,960');
   const [yearlyInsurance, setYearlyInsurance] = useState('1,200');
   const [hoaFee, setHoaFee] = useState('150');
   const [waterUtility, setWaterUtility] = useState('80');
   const [propertyManagementFee, setPropertyManagementFee] = useState('100');
 
-  // Purchase Price Change Handler
+  // NEW: Expected Monthly Rent Input
+  const [monthlyRent, setMonthlyRent] = useState('3,500');
+
+  // Purchase Price Change Handler [cite: 23, 25]
   const handlePriceChange = (e) => {
     const rawVal = parseUSNumber(e.target.value);
     if (rawVal === '') {
@@ -61,7 +64,7 @@ export default function MortgageCalculator() {
     }
   };
 
-  // Tax Rate Change Handler
+  // Tax Rate Change Handler [cite: 24, 25]
   const handleTaxRateChange = (e) => {
     const rawVal = e.target.value;
     if (rawVal === '') {
@@ -77,7 +80,7 @@ export default function MortgageCalculator() {
     setYearlyPropertyTax(formatUSNumber(calculatedTax.toFixed(2)));
   };
 
-  // Down Payment Handlers
+  // Down Payment Handlers [cite: 1, 2]
   const handlePercentChange = (e) => {
     const rawVal = e.target.value;
     if (rawVal === '') {
@@ -121,6 +124,7 @@ export default function MortgageCalculator() {
     const hoa = hoaFee === '' ? 0 : Number(parseUSNumber(hoaFee));
     const water = waterUtility === '' ? 0 : Number(parseUSNumber(waterUtility));
     const pm = propertyManagementFee === '' ? 0 : Number(parseUSNumber(propertyManagementFee));
+    const rent = monthlyRent === '' ? 0 : Number(parseUSNumber(monthlyRent));
 
     const actualDownPayment = downPaymentType === 'percent' ? (price * pct) / 100 : dpAmt;
     const loanAmount = Math.max(0, price - actualDownPayment);
@@ -143,12 +147,19 @@ export default function MortgageCalculator() {
     const totalMonthlyPayment =
       monthlyPrincipalAndInterest + monthlyTax + monthlyInsurance + hoa + water + pm;
 
+    // Rent Roll vs Mortgage calculation
+    const netCashFlow = rent - totalMonthlyPayment;
+    const isRentCovered = netCashFlow >= 0;
+
     return {
       loanAmount,
       monthlyPrincipalAndInterest,
       monthlyTax,
       monthlyInsurance,
       totalMonthlyPayment,
+      rent,
+      netCashFlow,
+      isRentCovered,
     };
   }, [
     purchasePrice,
@@ -162,11 +173,12 @@ export default function MortgageCalculator() {
     hoaFee,
     waterUtility,
     propertyManagementFee,
+    monthlyRent,
   ]);
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Mortgage & Monthly Expense Calculator</h2>
+      <h2 style={styles.title}>Mortgage & Rent Roll Calculator</h2>
 
       <div style={styles.grid}>
         {/* Form Inputs */}
@@ -305,9 +317,21 @@ export default function MortgageCalculator() {
               onChange={(e) => setPropertyManagementFee(formatUSNumber(parseUSNumber(e.target.value)))}
             />
           </label>
+
+          <h3 style={styles.sectionHeader}>Rental Income</h3>
+
+          <label style={styles.label}>
+            Expected Monthly Rent ($)
+            <input
+              type="text"
+              style={styles.input}
+              value={monthlyRent}
+              onChange={(e) => setMonthlyRent(formatUSNumber(parseUSNumber(e.target.value)))}
+            />
+          </label>
         </div>
 
-        {/* Results Summary with US Locale Currency Formatting */}
+        {/* Results Summary */}
         <div style={styles.summaryCard}>
           <h3 style={styles.summaryTitle}>Estimated Monthly Payment</h3>
           <div style={styles.totalAmount}>
@@ -346,6 +370,43 @@ export default function MortgageCalculator() {
           <div style={styles.breakdownItem}>
             <span>Total Loan Amount:</span>
             <strong>${calculations.loanAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+          </div>
+
+          {/* RENT ROLL VS MORTGAGE ANALYSIS SECTION */}
+          <hr style={styles.divider} />
+
+          <h4 style={styles.rentHeader}>Rent Roll vs. Mortgage</h4>
+
+          <div style={styles.breakdownList}>
+            <div style={styles.breakdownItem}>
+              <span>Monthly Rent Income:</span>
+              <strong>${calculations.rent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+            </div>
+            <div style={styles.breakdownItem}>
+              <span>Total Monthly Expenses:</span>
+              <strong>${calculations.totalMonthlyPayment.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+            </div>
+          </div>
+
+          <div style={{
+            ...styles.cashFlowBox,
+            backgroundColor: calculations.isRentCovered ? '#f0fdf4' : '#fef2f2',
+            borderColor: calculations.isRentCovered ? '#bbf7d0' : '#fecaca',
+          }}>
+            <div style={styles.cashFlowLabel}>Net Monthly Cash Flow</div>
+            <div style={{
+              ...styles.cashFlowAmount,
+              color: calculations.isRentCovered ? '#16a34a' : '#dc2626',
+            }}>
+              {calculations.netCashFlow >= 0 ? '+' : '-'}
+              ${Math.abs(calculations.netCashFlow).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+            <div style={{
+              ...styles.statusBadge,
+              backgroundColor: calculations.isRentCovered ? '#15803d' : '#b91c1c',
+            }}>
+              {calculations.isRentCovered ? 'Rent Covers Mortgage' : 'Rent Deficit'}
+            </div>
           </div>
         </div>
       </div>
@@ -468,5 +529,42 @@ const styles = {
     margin: '16px 0',
     border: 'none',
     borderTop: '1px solid #e5e7eb',
+  },
+  rentHeader: {
+    margin: '0 0 12px 0',
+    fontSize: '16px',
+    fontWeight: '600',
+    color: '#111827',
+  },
+  cashFlowBox: {
+    marginTop: '16px',
+    padding: '16px',
+    borderRadius: '8px',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '6px',
+  },
+  cashFlowLabel: {
+    fontSize: '13px',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: '#4b5563',
+  },
+  cashFlowAmount: {
+    fontSize: '28px',
+    fontWeight: '800',
+  },
+  statusBadge: {
+    color: '#ffffff',
+    padding: '4px 12px',
+    borderRadius: '9999px',
+    fontSize: '12px',
+    fontWeight: '600',
+    marginTop: '4px',
   },
 };
