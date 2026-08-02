@@ -272,18 +272,21 @@ export default function MortgageCalculator() {
   );
 }
 
-// Basic Inline Styles
+// Updated Styles for High-Contrast Light Theme Baseline
 const styles = {
   container: {
     maxWidth: '900px',
     margin: '0 auto',
     padding: '24px',
     fontFamily: 'system-ui, -apple-system, sans-serif',
-    color: '#333',
+    color: '#212529',
+    backgroundColor: '#ffffff',
+    borderRadius: '12px',
   },
   title: {
     textAlign: 'center',
     marginBottom: '32px',
+    color: '#111827',
   },
   grid: {
     display: 'grid',
@@ -298,8 +301,9 @@ const styles = {
   sectionHeader: {
     margin: '16px 0 8px 0',
     fontSize: '18px',
-    borderBottom: '1px solid #ccc',
+    borderBottom: '1px solid #e5e7eb',
     paddingBottom: '4px',
+    color: '#111827',
   },
   label: {
     display: 'flex',
@@ -307,12 +311,16 @@ const styles = {
     gap: '6px',
     fontSize: '14px',
     fontWeight: '500',
+    color: '#374151',
   },
   input: {
-    padding: '8px 12px',
-    borderRadius: '4px',
-    border: '1px solid #ccc',
+    padding: '10px 12px',
+    borderRadius: '6px',
+    border: '1px solid #d1d5db',
     fontSize: '16px',
+    backgroundColor: '#ffffff',
+    color: '#111827',
+    outline: 'none',
   },
   downPaymentContainer: {
     display: 'flex',
@@ -326,39 +334,42 @@ const styles = {
   },
   toggleGroup: {
     display: 'flex',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
+    border: '1px solid #d1d5db',
+    borderRadius: '6px',
     overflow: 'hidden',
   },
   toggle: {
-    background: '#f0f0f0',
+    background: '#f3f4f6',
+    color: '#374151',
     border: 'none',
     padding: '4px 12px',
     cursor: 'pointer',
   },
   activeToggle: {
-    background: '#0070f3',
-    color: '#fff',
+    background: '#2563eb',
+    color: '#ffffff',
     border: 'none',
     padding: '4px 12px',
     cursor: 'pointer',
   },
   summaryCard: {
-    background: '#f8f9fa',
+    background: '#f9fafb',
     borderRadius: '8px',
     padding: '24px',
-    border: '1px solid #e9ecef',
+    border: '1px solid #e5e7eb',
     height: 'fit-content',
+    color: '#111827',
   },
   summaryTitle: {
     margin: '0 0 12px 0',
     fontSize: '18px',
     textAlign: 'center',
+    color: '#111827',
   },
   totalAmount: {
     fontSize: '36px',
     fontWeight: 'bold',
-    color: '#0070f3',
+    color: '#2563eb',
     textAlign: 'center',
     marginBottom: '24px',
   },
@@ -371,10 +382,11 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     fontSize: '14px',
+    color: '#374151',
   },
   divider: {
     margin: '16px 0',
     border: 'none',
-    borderTop: '1px solid #ddd',
+    borderTop: '1px solid #e5e7eb',
   },
 };
