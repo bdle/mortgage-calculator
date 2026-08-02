@@ -32,14 +32,14 @@ export default function MortgageCalculator() {
   const [yearlyPropertyTax, setYearlyPropertyTax] = useState('4,960');
   const [yearlyInsurance, setYearlyInsurance] = useState('1,200');
   const [hoaFee, setHoaFee] = useState('150');
-  const [waterUtility, setWaterUtility] = useState('80');
+
+  // UPDATED: Yearly Water Cost (defaulting to $960/yr, which is $80/mo)
+  const [yearlyWaterCost, setYearlyWaterCost] = useState('960');
 
   // Rental Income & Management Fee (%)
   const [monthlyRent, setMonthlyRent] = useState('3,500');
-  const [propertyManagementRate, setPropertyManagementRate] = useState('8'); // Default 8%
-
-  // Property Management Fee ($) calculated based on Rent * Management Rate %
-  const [propertyManagementFee, setPropertyManagementFee] = useState('280'); // (3500 * 8%) = 280
+  const [propertyManagementRate, setPropertyManagementRate] = useState('8');
+  const [propertyManagementFee, setPropertyManagementFee] = useState('280');
 
   // Purchase Price Change Handler
   const handlePriceChange = (e) => {
@@ -114,7 +114,7 @@ export default function MortgageCalculator() {
     setDownPaymentPercent(price > 0 ? ((amt / price) * 100).toFixed(2) : '0');
   };
 
-  // Monthly Rent Change Handler (recalculates Property Management Fee)
+  // Monthly Rent Change Handler
   const handleRentChange = (e) => {
     const rawVal = parseUSNumber(e.target.value);
     if (rawVal === '') {
@@ -131,7 +131,7 @@ export default function MortgageCalculator() {
     setPropertyManagementFee(formatUSNumber(calculatedFee.toFixed(2)));
   };
 
-  // Property Management Fee Rate (%) Handler
+  // Property Management Rate (%) Handler
   const handleManagementRateChange = (e) => {
     const rawVal = e.target.value;
     if (rawVal === '') {
@@ -176,7 +176,11 @@ export default function MortgageCalculator() {
     const tax = yearlyPropertyTax === '' ? 0 : Number(parseUSNumber(yearlyPropertyTax));
     const ins = yearlyInsurance === '' ? 0 : Number(parseUSNumber(yearlyInsurance));
     const hoa = hoaFee === '' ? 0 : Number(parseUSNumber(hoaFee));
-    const water = waterUtility === '' ? 0 : Number(parseUSNumber(waterUtility));
+
+    // Convert Yearly Water Cost into Monthly Expense
+    const yearlyWater = yearlyWaterCost === '' ? 0 : Number(parseUSNumber(yearlyWaterCost));
+    const monthlyWater = yearlyWater / 12;
+
     const pm = propertyManagementFee === '' ? 0 : Number(parseUSNumber(propertyManagementFee));
     const rent = monthlyRent === '' ? 0 : Number(parseUSNumber(monthlyRent));
 
@@ -199,7 +203,7 @@ export default function MortgageCalculator() {
     const monthlyInsurance = ins / 12;
 
     const totalMonthlyPayment =
-      monthlyPrincipalAndInterest + monthlyTax + monthlyInsurance + hoa + water + pm;
+      monthlyPrincipalAndInterest + monthlyTax + monthlyInsurance + hoa + monthlyWater + pm;
 
     const netCashFlow = rent - totalMonthlyPayment;
     const isRentCovered = netCashFlow >= 0;
@@ -209,6 +213,7 @@ export default function MortgageCalculator() {
       monthlyPrincipalAndInterest,
       monthlyTax,
       monthlyInsurance,
+      monthlyWater,
       totalMonthlyPayment,
       rent,
       netCashFlow,
@@ -224,7 +229,7 @@ export default function MortgageCalculator() {
     yearlyPropertyTax,
     yearlyInsurance,
     hoaFee,
-    waterUtility,
+    yearlyWaterCost,
     propertyManagementFee,
     monthlyRent,
   ]);
@@ -351,13 +356,14 @@ export default function MortgageCalculator() {
             />
           </label>
 
+          {/* UPDATED FIELD: Yearly Water Cost */}
           <label style={styles.label}>
-            Monthly Water Utility ($)
+            Yearly Water Cost ($)
             <input
               type="text"
               style={styles.input}
-              value={waterUtility}
-              onChange={(e) => setWaterUtility(formatUSNumber(parseUSNumber(e.target.value)))}
+              value={yearlyWaterCost}
+              onChange={(e) => setYearlyWaterCost(formatUSNumber(parseUSNumber(e.target.value)))}
             />
           </label>
 
@@ -419,8 +425,8 @@ export default function MortgageCalculator() {
               <strong>${(Number(parseUSNumber(hoaFee)) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
             </div>
             <div style={styles.breakdownItem}>
-              <span>Water Utility:</span>
-              <strong>${(Number(parseUSNumber(waterUtility)) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+              <span>Water Utility (Monthly):</span>
+              <strong>${calculations.monthlyWater.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
             </div>
             <div style={styles.breakdownItem}>
               <span>Property Management ({propertyManagementRate || 0}%):</span>
