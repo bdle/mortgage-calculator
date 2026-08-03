@@ -1,9 +1,9 @@
 import React from 'react';
 import { formatCurrency } from '../utils/formatters';
 
-export function BreakdownItem({ label, amount }) {
+export function BreakdownItem({ label, amount, dataCy }) {
     return (
-        <div style={styles.breakdownItem}>
+        <div data-cy={`${dataCy}-items`} style={styles.breakdownItem}>
             <span>{label}</span>
             <strong>${formatCurrency(amount)}</strong>
         </div>

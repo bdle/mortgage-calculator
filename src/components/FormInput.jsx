@@ -1,15 +1,16 @@
 import React from 'react';
 
-export function FormInput({ label, value, onChange, prefix, suffix, longSuffix }) {
+export function FormInput({ label, dataCy, value, onChange, prefix, suffix, longSuffix }) {
     const handleInputFocus = (e) => e.target.select();
 
     return (
-        <label style={styles.label}>
+        <label data-cy={`${dataCy}-label`} style={styles.label}>
             {label && <span>{label}</span>}
-            <div style={styles.inputWrapper}>
+            <div data-cy={dataCy} style={styles.inputWrapper}>
                 {prefix && <span style={styles.prefix}>{prefix}</span>}
                 <input
                     type="text"
+                    data-cy={`${dataCy}-input`}
                     style={{
                         ...styles.input,
                         paddingLeft: prefix ? '26px' : '12px',

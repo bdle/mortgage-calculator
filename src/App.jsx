@@ -137,33 +137,36 @@ export default function MortgageCalculator() {
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Mortgage & Rent Roll Calculator</h2>
+      <h2 data-cy="app-title-header" style={styles.title}>Mortgage & Rent Roll Calculator</h2>
 
       <div style={styles.mainLayout}>
         <div style={styles.formContainer}>
           {/* LOAN DETAILS SECTION */}
-          <h3 style={styles.sectionHeader}>Loan Details</h3>
+          <h3 data-cy="loan-details-header" style={styles.sectionHeader}>Loan Details</h3>
 
           {/* PARENT GROUP: PURCHASE PRICE & DOWN PAYMENT */}
           <div style={styles.groupedWrapper}>
             <div style={styles.twoColumnGrid}>
               <FormInput
                 label="Purchase Price"
+                dataCy="purchase-price"
                 prefix="$"
                 value={purchasePrice}
                 onChange={handlePriceChange}
               />
 
               {/* NESTED DOWN PAYMENT GROUP WITH SINGLE LABEL */}
-              <div style={styles.downPaymentGroupContainer}>
-                <label style={styles.label}>Down Payment</label>
+              <div data-cy="down-container" style={styles.downPaymentGroupContainer}>
+                <label data-cy="down-label" style={styles.label}>Down Payment</label>
                 <div style={styles.nestedDownPaymentGroup}>
                   <FormInput
+                    dataCy="down-payment-percent"
                     suffix="%"
                     value={downPaymentPercent}
                     onChange={handleDownPaymentPercentChange}
                   />
                   <FormInput
+                    dataCy="down-payment-amount"
                     prefix="$"
                     value={downPaymentAmount}
                     onChange={handleDownPaymentAmountChange}
@@ -177,12 +180,13 @@ export default function MortgageCalculator() {
           <div style={styles.twoColumnGrid}>
             <FormInput
               label="Interest Rate"
+              dataCy="interest-rate"
               suffix="%"
               value={interestRate}
               onChange={(e) => setInterestRate(e.target.value)}
             />
 
-            <label style={styles.selectLabel}>
+            <label dataCy="loan-term" style={styles.selectLabel}>
               Loan Term
               <select style={styles.select} value={loanTermYears} onChange={(e) => setLoanTermYears(Number(e.target.value))}>
                 <option style={styles.option} value={15}>15 Years</option>
@@ -195,19 +199,19 @@ export default function MortgageCalculator() {
           {/* TAXES & ADDITIONAL FEES */}
           <h3 style={styles.sectionHeader}>Taxes & Additional Fees</h3>
           <div style={styles.twoColumnGrid}>
-            <FormInput label="Property Tax Rate" prefix="$" longSuffix="per $1,000" value={taxRatePerThousand} onChange={handleTaxRateChange} />
-            <FormInput label="Yearly Property Tax" prefix="$" value={yearlyPropertyTax} onChange={(e) => setYearlyPropertyTax(formatUSNumber(parseUSNumber(e.target.value)))} />
-            <FormInput label="Yearly Insurance" prefix="$" value={yearlyInsurance} onChange={(e) => setYearlyInsurance(formatUSNumber(parseUSNumber(e.target.value)))} />
-            <FormInput label="Monthly HOA Fee" prefix="$" value={hoaFee} onChange={(e) => setHoaFee(formatUSNumber(parseUSNumber(e.target.value)))} />
-            <FormInput label="Yearly Water Cost" prefix="$" value={yearlyWaterCost} onChange={(e) => setYearlyWaterCost(formatUSNumber(parseUSNumber(e.target.value)))} />
-            <FormInput label="Expected Monthly Rent" prefix="$" value={monthlyRent} onChange={handleRentChange} />
+            <FormInput dataCy="property-tax-rate" label="Property Tax Rate" prefix="$" longSuffix="per $1,000" value={taxRatePerThousand} onChange={handleTaxRateChange} />
+            <FormInput dataCy="yearly-tax-rate" label="Yearly Property Tax" prefix="$" value={yearlyPropertyTax} onChange={(e) => setYearlyPropertyTax(formatUSNumber(parseUSNumber(e.target.value)))} />
+            <FormInput dataCy="yearly-insurance" label="Yearly Insurance" prefix="$" value={yearlyInsurance} onChange={(e) => setYearlyInsurance(formatUSNumber(parseUSNumber(e.target.value)))} />
+            <FormInput dataCy="hoa-fee" label="Monthly HOA Fee" prefix="$" value={hoaFee} onChange={(e) => setHoaFee(formatUSNumber(parseUSNumber(e.target.value)))} />
+            <FormInput dataCy="yearly-water-cost" label="Yearly Water Cost" prefix="$" value={yearlyWaterCost} onChange={(e) => setYearlyWaterCost(formatUSNumber(parseUSNumber(e.target.value)))} />
+            <FormInput dataCy="rent-roll" label="Expected Monthly Rent" prefix="$" value={monthlyRent} onChange={handleRentChange} />
           </div>
 
           {/* RENTAL MANAGEMENT */}
           <h3 style={styles.sectionHeader}>Rental Management</h3>
           <div style={styles.twoColumnGrid}>
-            <FormInput label="Management Fee" suffix="%" value={propertyManagementRate} onChange={handleManagementRateChange} />
-            <FormInput label="Monthly Management Fee" prefix="$" value={propertyManagementFee} onChange={handleManagementFeeChange} />
+            <FormInput dataCy="management-fee-rate" label="Management Fee" suffix="%" value={propertyManagementRate} onChange={handleManagementRateChange} />
+            <FormInput dataCy="management-fee" label="Monthly Management Fee" prefix="$" value={propertyManagementFee} onChange={handleManagementFeeChange} />
           </div>
         </div>
 
@@ -217,23 +221,23 @@ export default function MortgageCalculator() {
           <div style={styles.totalAmount}>${formatCurrency(calculations.totalMonthlyPayment)}</div>
 
           <div style={styles.breakdownList}>
-            <BreakdownItem label="Principal & Interest:" amount={calculations.monthlyPrincipalAndInterest} />
-            <BreakdownItem label="Property Tax:" amount={calculations.monthlyTax} />
-            <BreakdownItem label="Insurance:" amount={calculations.monthlyInsurance} />
-            <BreakdownItem label="HOA Fee:" amount={parseUSNumber(hoaFee)} />
-            <BreakdownItem label="Water Utility (Monthly):" amount={calculations.monthlyWater} />
-            <BreakdownItem label={`Property Management (${propertyManagementRate || 0}%):`} amount={parseUSNumber(propertyManagementFee)} />
+            <BreakdownItem dataCy="principal-interest" label="Principal & Interest:" amount={calculations.monthlyPrincipalAndInterest} />
+            <BreakdownItem dataCy="prop-tax" label="Property Tax:" amount={calculations.monthlyTax} />
+            <BreakdownItem dataCy="insurance" label="Insurance:" amount={calculations.monthlyInsurance} />
+            <BreakdownItem dataCy="hoa" label="HOA Fee:" amount={parseUSNumber(hoaFee)} />
+            <BreakdownItem dataCy="water-util" label="Water Utility (Monthly):" amount={calculations.monthlyWater} />
+            <BreakdownItem dataCy="prop-management" label={`Property Management (${propertyManagementRate || 0}%):`} amount={parseUSNumber(propertyManagementFee)} />
           </div>
 
           <hr style={styles.divider} />
-          <BreakdownItem label="Total Loan Amount:" amount={calculations.loanAmount} />
+          <BreakdownItem dataCy="loan-amount" label="Total Loan Amount:" amount={calculations.loanAmount} />
           <hr style={styles.divider} />
 
           {/* RENT ROLL ANALYSIS */}
           <h4 style={styles.rentHeader}>Rent Roll vs. Mortgage</h4>
           <div style={styles.breakdownList}>
-            <BreakdownItem label="Monthly Rent Income:" amount={calculations.rent} />
-            <BreakdownItem label="Total Monthly Expenses:" amount={calculations.totalMonthlyPayment} />
+            <BreakdownItem dataCy="rent-roll-income" label="Monthly Rent Income:" amount={calculations.rent} />
+            <BreakdownItem dataCy="monthly-expense" label="Total Monthly Expenses:" amount={calculations.totalMonthlyPayment} />
           </div>
 
           <div style={{
