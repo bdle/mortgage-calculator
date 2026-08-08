@@ -47,6 +47,23 @@ jobs:
         with:
           path: './dist' # Vite outputs build files to 'dist' (use 'build' if using CRA)
 
+      # 4. Package build folder into a .zip bundle
+      - name: Compress Build Artifact
+        run: |
+          zip -r mortgage-calculator-v${{ github.run_number }}.zip dist/
+
+      # 5. Setup official JFrog CLI
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v4
+        env:
+          JF_URL: ${{ secrets.JF_URL }}
+          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+
+      # 6. Upload build artifact to Artifactory Generic Repository
+      - name: Upload Artifact to JFrog
+        run: |
+          jf rt upload mortgage-calculator-v${{ github.run_number }}.zip mortgage-calculator-builds/
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
