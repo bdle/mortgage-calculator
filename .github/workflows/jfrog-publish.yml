@@ -1,0 +1,44 @@
+name: Build and Upload Artifact to JFrog Artifactory
+
+on:
+  push:
+    branches: [ main ] # Triggers on push to main branch
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repository code
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      # 2. Set up Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      # 3. Install dependencies and build React app
+      - name: Install & Build App
+        run: |
+          npm ci
+          npm run build
+
+      # 4. Package build folder into a .zip bundle
+      - name: Compress Build Artifact
+        run: |
+          zip -r mortgage-calculator-v${{ github.run_number }}.zip dist/
+
+      # 5. Setup official JFrog CLI
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v4
+        env:
+          JF_URL: ${{ secrets.JF_URL }}
+          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+
+      # 6. Upload build artifact to Artifactory Generic Repository
+      - name: Upload Artifact to JFrog
+        run: |
+          jf rt upload mortgage-calculator-v${{ github.run_number }}.zip mortgage-calculator-builds/
