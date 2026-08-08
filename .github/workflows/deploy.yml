@@ -53,6 +53,7 @@ jobs:
   run-cypress-test:
     # needs: [wait_amplify_build_complete, setup_for_cypress]
     uses: bdle/cy-mortgage-calulator/.github/workflows/reusable_workflow.yml@main
+    secrets: inherit
     with:
       test_suite: 'tier1'
       dispatcher_text: 'Atto Mattic from mortgage-calculator repo'
