@@ -47,6 +47,13 @@ jobs:
         with:
           path: './dist' # Vite outputs build files to 'dist' (use 'build' if using CRA)
 
+      - name: call cypress test from mortgage-calculator repo
+        # needs: [wait_amplify_build_complete, setup_for_cypress]
+        uses: bdle/cy-mortgage-calulator/.github/workflows/reusable_workflow.yml@master
+        with:
+          test_suite: 'tier1'
+          dispatcher_text: 'Atto Mattic from mortgage-calculator repo'
+      
       # 4. Package build folder into a .zip bundle
       - name: Compress Build Artifact
         run: |
