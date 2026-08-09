@@ -51,7 +51,7 @@ jobs:
         uses: actions/deploy-pages@v4
 
   run-cypress-test:
-    # needs: [wait_amplify_build_complete, setup_for_cypress]
+    needs: [build-and-deploy]
     uses: bdle/cy-mortgage-calulator/.github/workflows/reusable_workflow.yml@main
     secrets: inherit
     with:
@@ -59,7 +59,7 @@ jobs:
       dispatcher_text: 'Atto Mattic from mortgage-calculator repo'
   
   package-sent-jfrog:
-    needs: run-cypress-test
+    needs: [run-cypress-test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
