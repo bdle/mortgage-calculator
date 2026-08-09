@@ -197,7 +197,7 @@ export default function MortgageCalculator() {
           </div>
 
           {/* TAXES & ADDITIONAL FEES */}
-          <h3 style={styles.sectionHeader}>Taxes & Additional Fees</h3>
+          <h3 style={styles.sectionHeader}>Expenses and Income</h3>
           <div style={styles.twoColumnGrid}>
             <FormInput dataCy="property-tax-rate" label="Property Tax Rate" prefix="$" longSuffix="per $1,000" value={taxRatePerThousand} onChange={handleTaxRateChange} />
             <FormInput dataCy="yearly-tax-rate" label="Yearly Property Tax" prefix="$" value={yearlyPropertyTax} onChange={(e) => setYearlyPropertyTax(formatUSNumber(parseUSNumber(e.target.value)))} />
