@@ -40,11 +40,6 @@ jobs:
 
       - name: Build Project
         run: npm run build
-
-      - name: Upload Build Artifacts
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './dist' # Vite outputs build files to 'dist' (use 'build' if using CRA)
       
      # Deploy MAIN to root (preserves existing preview folders)
       - name: Deploy Production (Main)
