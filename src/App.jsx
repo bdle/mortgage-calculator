@@ -5,22 +5,22 @@ import { useMortgageCalculator } from './hooks/useMortgageCalculator';
 import { formatUSNumber, parseUSNumber, formatCurrency } from './utils/formatters';
 
 export default function MortgageCalculator() {
-  const [purchasePrice, setPurchasePrice] = useState('400,000');
+  const [purchasePrice, setPurchasePrice] = useState('1,600,000');
 
   // Dedicated Down Payment States (%) and ($)
-  const [downPaymentPercent, setDownPaymentPercent] = useState('20');
-  const [downPaymentAmount, setDownPaymentAmount] = useState('80,000');
+  const [downPaymentPercent, setDownPaymentPercent] = useState('41.25');
+  const [downPaymentAmount, setDownPaymentAmount] = useState('660,000');
 
-  const [interestRate, setInterestRate] = useState('6.5');
+  const [interestRate, setInterestRate] = useState('6.25');
   const [loanTermYears, setLoanTermYears] = useState(30);
 
   const [taxRatePerThousand, setTaxRatePerThousand] = useState('12.40');
   const [yearlyPropertyTax, setYearlyPropertyTax] = useState('4,960');
-  const [yearlyInsurance, setYearlyInsurance] = useState('1,200');
+  const [yearlyInsurance, setYearlyInsurance] = useState('4,700');
   const [hoaFee, setHoaFee] = useState('0');
-  const [yearlyWaterCost, setYearlyWaterCost] = useState('960');
+  const [yearlyWaterCost, setYearlyWaterCost] = useState('2000');
 
-  const [monthlyRent, setMonthlyRent] = useState('3,500');
+  const [monthlyRent, setMonthlyRent] = useState('10,650');
   const [propertyManagementRate, setPropertyManagementRate] = useState('4');
   const [propertyManagementFee, setPropertyManagementFee] = useState('140');
 
