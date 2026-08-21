@@ -21,10 +21,10 @@ jobs:
   build-and-deploy:
     environment:
       name: github-pages
-      url: ${{ steps.set-url.outputs.page_url }}
+      url: ${{ steps.set-url.outputs.host_url }}
     runs-on: ubuntu-latest
     outputs:
-      page_url: $url
+      host_url: ${{ steps.set-url.outputs.host_url }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -66,17 +66,17 @@ jobs:
         id: set-url
         run: |
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "page_url=${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_OUTPUT"
+            echo "host_url=${{ steps.deployment.outputs.host_url }}" >> "$GITHUB_OUTPUT"
           else
-            echo "page_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/preview/${{ github.ref_name }}/" >> "$GITHUB_OUTPUT"
+            echo "host_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/preview/${{ github.ref_name }}/" >> "$GITHUB_OUTPUT"
           fi
-          
+
   run-cypress-test:
     needs: [build-and-deploy]
     uses: bdle/cy-mortgage-calulator/.github/workflows/reusable_workflow.yml@main
     secrets: inherit
     with:
-      url: ${{ needs.build-and-deploy.outputs.page_url }}
+      url: ${{ needs.build-and-deploy.outputs.host_url }}
       test_suite: 'tier1'
       dispatcher_text: 'Atto Mattic from mortgage-calculator repo'
   
