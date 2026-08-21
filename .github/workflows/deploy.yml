@@ -24,7 +24,7 @@ jobs:
       url: ${{ github.ref == 'refs/heads/main' && steps.deployment.outputs.page_url || format('https://{0}.github.io/{1}/preview/{2}/', github.repository_owner, github.event.repository.name, github.ref_name) }}
     runs-on: ubuntu-latest
     outputs:
-      page_url: ${{ steps.deployment.outputs.page_url  }}
+      page_url: ${{ ENV.url }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
