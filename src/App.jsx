@@ -272,7 +272,7 @@ const styles = {
   title: {
     textAlign: 'center',
     marginBottom: '32px',
-    color: '#111827',
+    color: '#eb25cd',
   },
   mainLayout: {
     display: 'grid',
@@ -320,7 +320,7 @@ const styles = {
     borderBottom: '1px solid #e5e7eb',
     paddingBottom: '4px',
     textAlign: 'left',
-    color: '#111827',
+    color: '#8f2471',
   },
   selectLabel: {
     display: 'flex',

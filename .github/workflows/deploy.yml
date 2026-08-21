@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - main # Triggers workflow on push to main branch
+      - feature/*
   workflow_dispatch:
 # Grant permissions required for GitHub Pages deployment
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -46,9 +47,19 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: './dist' # Vite outputs build files to 'dist' (use 'build' if using CRA)
+      
       - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
         id: deployment
         uses: actions/deploy-pages@v4
+      
+      - name: Deploy Feature Preview to GitHub Pages
+        if: github.ref != 'refs/heads/main'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist # or build
+          target-folder: preview/${{ github.ref_name }} # Deploys to a subfolder
+          clean: false # Prevents overwriting production main files
 
   run-cypress-test:
     needs: [build-and-deploy]
