@@ -40,35 +40,43 @@ jobs:
 
       - name: Build Project
         run: npm run build
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Build Artifacts
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './dist' # Vite outputs build files to 'dist' (use 'build' if using CRA)
       
-      - name: Deploy to GitHub Pages
+     # Deploy MAIN to root (preserves existing preview folders)
+      - name: Deploy Production (Main)
         if: github.ref == 'refs/heads/main'
-        id: deployment
-        uses: actions/deploy-pages@v4
-      
-      - name: Deploy Feature Preview to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist
+          target-folder: . # Deploys directly to root
+          clean: false     # Keeps existing preview/* folders intact
+
+      - name: Prepare Preview Folder Name
+        if: github.ref != 'refs/heads/main'
+        id: preview-path
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          CLEAN_NAME="${BRANCH_NAME#feature/}"
+          echo "folder_name=${CLEAN_NAME}" >> "$GITHUB_OUTPUT"
+
+      # Deploy FEATURE branch to subdirectory
+      - name: Deploy Feature Preview
         if: github.ref != 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: dist # or build
-          target-folder: preview/${{ github.ref_name }} # Deploys to a subfolder
-          clean: false # Prevents overwriting production main files
-
+          folder: dist
+          target-folder: preview/${{ steps.preview-path.outputs.folder_name }}
+          clean: false
+          
       - name: Set Target Deployment URL Output
         id: set-url
         run: |
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "host_url=${{ steps.deployment.outputs.host_url }}" >> "$GITHUB_OUTPUT"
+            echo "host_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" >> "$GITHUB_OUTPUT"
           else
-            echo "host_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/preview/${{ github.ref_name }}/" >> "$GITHUB_OUTPUT"
+            # Strip "feature/" prefix to prevent deep directory nesting
+            CLEAN_BRANCH="${{ github.ref_name }}"
+            CLEAN_BRANCH="${CLEAN_BRANCH#feature/}"
+            echo "host_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/preview/${CLEAN_BRANCH}/" >> "$GITHUB_OUTPUT"
           fi
 
   run-cypress-test:
