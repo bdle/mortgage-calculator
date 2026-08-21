@@ -19,9 +19,6 @@ concurrency:
 
 jobs:
   build-and-deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.set-url.outputs.host_url }}
     runs-on: ubuntu-latest
     outputs:
       host_url: ${{ steps.set-url.outputs.host_url }}
@@ -49,19 +46,24 @@ jobs:
         with:
           path: './dist' # Vite outputs build files to 'dist' (use 'build' if using CRA)
       
-      - name: Deploy to GitHub Pages
+     # Deploy MAIN to root (preserves existing preview folders)
+      - name: Deploy Production (Main)
         if: github.ref == 'refs/heads/main'
-        id: deployment
-        uses: actions/deploy-pages@v4
-      
-      - name: Deploy Feature Preview to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist
+          target-folder: . # Deploys directly to root
+          clean: false     # Keeps existing preview/* folders intact
+
+      # Deploy FEATURE branch to subdirectory (preserves main production root)
+      - name: Deploy Feature Preview
         if: github.ref != 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: dist # or build
-          target-folder: preview/${{ github.ref_name }} # Deploys to a subfolder
-          clean: false # Prevents overwriting production main files
-
+          folder: dist
+          target-folder: preview/${{ github.ref_name }} # Deploys to preview/feature/...
+          clean: false     # Keeps root main files and other previews intact
+          
       - name: Set Target Deployment URL Output
         id: set-url
         run: |
