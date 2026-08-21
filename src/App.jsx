@@ -381,7 +381,7 @@ const styles = {
     fontSize: '16px',
     fontWeight: '600',
     textAlign: 'left',
-    color: '#111827',
+    color: '#156325',
   },
   cashFlowBox: {
     marginTop: '16px',
