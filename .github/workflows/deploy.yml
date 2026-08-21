@@ -19,6 +19,9 @@ concurrency:
 
 jobs:
   build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.set-url.outputs.host_url }}
     runs-on: ubuntu-latest
     outputs:
       host_url: ${{ steps.set-url.outputs.host_url }}
