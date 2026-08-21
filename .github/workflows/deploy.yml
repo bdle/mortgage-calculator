@@ -50,22 +50,33 @@ jobs:
           target-folder: . # Deploys directly to root
           clean: false     # Keeps existing preview/* folders intact
 
-      # Deploy FEATURE branch to subdirectory (preserves main production root)
+      - name: Prepare Preview Folder Name
+        if: github.ref != 'refs/heads/main'
+        id: preview-path
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          CLEAN_NAME="${BRANCH_NAME#feature/}"
+          echo "folder_name=${CLEAN_NAME}" >> "$GITHUB_OUTPUT"
+
+      # Deploy FEATURE branch to subdirectory
       - name: Deploy Feature Preview
         if: github.ref != 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: dist
-          target-folder: preview/${{ github.ref_name }} # Deploys to preview/feature/...
-          clean: false     # Keeps root main files and other previews intact
+          target-folder: preview/${{ steps.preview-path.outputs.folder_name }}
+          clean: false
           
       - name: Set Target Deployment URL Output
         id: set-url
         run: |
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "host_url=${{ steps.deployment.outputs.host_url }}" >> "$GITHUB_OUTPUT"
+            echo "host_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" >> "$GITHUB_OUTPUT"
           else
-            echo "host_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/preview/${{ github.ref_name }}/" >> "$GITHUB_OUTPUT"
+            # Strip "feature/" prefix to prevent deep directory nesting
+            CLEAN_BRANCH="${{ github.ref_name }}"
+            CLEAN_BRANCH="${CLEAN_BRANCH#feature/}"
+            echo "host_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/preview/${CLEAN_BRANCH}/" >> "$GITHUB_OUTPUT"
           fi
 
   run-cypress-test:
