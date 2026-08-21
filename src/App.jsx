@@ -15,14 +15,14 @@ export default function MortgageCalculator() {
   const [loanTermYears, setLoanTermYears] = useState(30);
 
   const [taxRatePerThousand, setTaxRatePerThousand] = useState('12.40');
-  const [yearlyPropertyTax, setYearlyPropertyTax] = useState('4,960');
+  const [yearlyPropertyTax, setYearlyPropertyTax] = useState('19,840.00');
   const [yearlyInsurance, setYearlyInsurance] = useState('4,700');
   const [hoaFee, setHoaFee] = useState('0');
   const [yearlyWaterCost, setYearlyWaterCost] = useState('2000');
 
   const [monthlyRent, setMonthlyRent] = useState('10,650');
   const [propertyManagementRate, setPropertyManagementRate] = useState('4');
-  const [propertyManagementFee, setPropertyManagementFee] = useState('140');
+  const [propertyManagementFee, setPropertyManagementFee] = useState('426.00');
 
   // Purchase Price Change Handler (recalculates Down Payment $ & Property Tax)
   const handlePriceChange = (e) => {
