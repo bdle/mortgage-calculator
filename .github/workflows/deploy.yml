@@ -21,7 +21,7 @@ jobs:
   build-and-deploy:
     environment:
       name: github-pages
-      url: ${{ github.ref == 'refs/heads/main' && steps.deployment.outputs.page_url || format('https://{0}.github.io/{1}/preview/{2}/', github.repository_owner, github.event.repository.name, github.ref_name) }}
+      url: ${{ steps.set-url.outputs.page_url }}
     runs-on: ubuntu-latest
     outputs:
       page_url: $url
@@ -62,6 +62,15 @@ jobs:
           target-folder: preview/${{ github.ref_name }} # Deploys to a subfolder
           clean: false # Prevents overwriting production main files
 
+      - name: Set Target Deployment URL Output
+        id: set-url
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "page_url=${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "page_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/preview/${{ github.ref_name }}/" >> "$GITHUB_OUTPUT"
+          fi
+          
   run-cypress-test:
     needs: [build-and-deploy]
     uses: bdle/cy-mortgage-calulator/.github/workflows/reusable_workflow.yml@main
