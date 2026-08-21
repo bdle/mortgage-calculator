@@ -23,7 +23,8 @@ jobs:
       name: github-pages
       url: ${{ github.ref == 'refs/heads/main' && steps.deployment.outputs.page_url || format('https://{0}.github.io/{1}/preview/{2}/', github.repository_owner, github.event.repository.name, github.ref_name) }}
     runs-on: ubuntu-latest
-
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url  }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -66,6 +67,7 @@ jobs:
     uses: bdle/cy-mortgage-calulator/.github/workflows/reusable_workflow.yml@main
     secrets: inherit
     with:
+      url: ${{ needs.build-and-deploy.outputs.page_url }}
       test_suite: 'tier1'
       dispatcher_text: 'Atto Mattic from mortgage-calculator repo'
   
