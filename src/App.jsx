@@ -357,7 +357,7 @@ const styles = {
     margin: '0 0 12px 0',
     fontSize: '18px',
     textAlign: 'center',
-    color: '#111827',
+    color: '#ec3d3d',
   },
   totalAmount: {
     fontSize: '36px',
