@@ -3,12 +3,12 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyAzZpfUm2ql0kNZr3rn4o5MgsLVuh1oC4Q",
-    authDomain: "mortgage-calculator-cb33f.firebaseapp.com",
-    projectId: "mortgage-calculator-cb33f",
-    storageBucket: "mortgage-calculator-cb33f.firebasestorage.app",
-    messagingSenderId: "207057103469",
-    appId: "1:207057103469:web:9c4426c46b99029dbe6d64",
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
     measurementId: "G-WPJGW4RMRK"
 };
 
