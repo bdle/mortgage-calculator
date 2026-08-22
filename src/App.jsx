@@ -20,22 +20,45 @@ export default function MortgageCalculator() {
       alert('Please enter a property name or address');
       return;
     }
+    // 1. Save all input states to Firestore
     const currentData = {
       purchasePrice,
+      downPaymentPercent,
       downPaymentAmount,
+      interestRate,
+      loanTermYears,
+      taxRatePerThousand,
+      yearlyPropertyTax,
+      yearlyInsurance,
+      hoaFee,
+      yearlyWaterCost,
       monthlyRent,
+      propertyManagementRate,
+      propertyManagementFee
       // include all other inputs
     };
     await saveProForma(propertyName, currentData);
     setPropertyName('');
   };
 
-  // Load handler
+  // 2. Hydrate all input states when loading a saved pro forma
   const handleLoad = (savedItem) => {
-    setPurchasePrice(savedItem.data.purchasePrice || '');
-    setDownPaymentAmount(savedItem.data.downPaymentAmount || '');
-    setMonthlyRent(savedItem.data.monthlyRent || '');
-    // populate remaining inputs
+    if (!savedItem || !savedItem.data) return;
+    const d = savedItem.data;
+
+    setPurchasePrice(d.purchasePrice ?? '');
+    setDownPaymentPercent(d.downPaymentPercent ?? '');
+    setDownPaymentAmount(d.downPaymentAmount ?? '');
+    setInterestRate(d.interestRate ?? '');
+    setLoanTermYears(d.loanTermYears ?? '30');
+    setTaxRatePerThousand(d.taxRatePerThousand ?? '');
+    setYearlyPropertyTax(d.yearlyPropertyTax ?? '');
+    setYearlyInsurance(d.yearlyInsurance ?? '');
+    setHoaFee(d.hoaFee ?? '');
+    setYearlyWaterCost(d.yearlyWaterCost ?? '');
+    setMonthlyRent(d.monthlyRent ?? '');
+    setPropertyManagementRate(d.propertyManagementRate ?? '');
+    setPropertyManagementFee(d.propertyManagementFee ?? '');
   };
 
   const [purchasePrice, setPurchasePrice] = useState('1,600,000');
