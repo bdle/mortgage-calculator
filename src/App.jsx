@@ -3,8 +3,41 @@ import { FormInput } from './components/FormInput';
 import { BreakdownItem } from './components/BreakdownItem';
 import { useMortgageCalculator } from './hooks/useMortgageCalculator';
 import { formatUSNumber, parseUSNumber, formatCurrency } from './utils/formatters';
-
+import { useUserProFormas } from './hooks/userUserProFormas';
 export default function MortgageCalculator() {
+  const {
+    user,
+    savedProFormas,
+    loginWithGoogle,
+    logoutUser,
+    saveProForma,
+    deleteProForma
+  } = useUserProFormas();
+  const [propertyName, setPropertyName] = useState('');
+  // Save handler
+  const handleSave = async () => {
+    if (!propertyName.trim()) {
+      alert('Please enter a property name or address');
+      return;
+    }
+    const currentData = {
+      purchasePrice,
+      downPaymentAmount,
+      monthlyRent,
+      // include all other inputs
+    };
+    await saveProForma(propertyName, currentData);
+    setPropertyName('');
+  };
+
+  // Load handler
+  const handleLoad = (savedItem) => {
+    setPurchasePrice(savedItem.data.purchasePrice || '');
+    setDownPaymentAmount(savedItem.data.downPaymentAmount || '');
+    setMonthlyRent(savedItem.data.monthlyRent || '');
+    // populate remaining inputs
+  };
+
   const [purchasePrice, setPurchasePrice] = useState('1,600,000');
 
   // Dedicated Down Payment States (%) and ($)
@@ -138,7 +171,74 @@ export default function MortgageCalculator() {
   return (
     <div style={styles.container}>
       <h2 data-cy="app-title-header" style={styles.title}>Mortgage & Rent Roll Calculator</h2>
-
+      {/* Auth Bar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <h1 style={{ margin: 0, fontSize: '1.5rem', color: '#111827' }}>Mortgage Pro Forma</h1>
+        {user ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontSize: '0.875rem', color: '#374151' }}>{user.displayName || user.email}</span>
+            <button
+              onClick={logoutUser}
+              style={{ padding: '0.4rem 0.8rem', borderRadius: '4px', border: '1px solid #ccc', cursor: 'pointer' }}
+            >
+              Sign Out
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={loginWithGoogle}
+            data-cy="google-login-btn"
+            style={{ padding: '0.5rem 1rem', backgroundColor: '#4285F4', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+          >
+            Sign in with Google
+          </button>
+        )}
+      </div>
+      {/* Saved Pro Formas Manager */}
+      {user && (
+        <div style={{ backgroundColor: '#f9fafb', padding: '1rem', borderRadius: '6px', marginBottom: '1.5rem', border: '1px solid #e5e7eb' }}>
+          <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '1rem', color: '#111827' }}>Save / Load Pro Forma</h3>
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+            <input
+              type="text"
+              placeholder="Property Address / Nickname"
+              value={propertyName}
+              onChange={(e) => setPropertyName(e.target.value)}
+              style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', border: '1px solid #d1d5db' }}
+            />
+            <button
+              onClick={handleSave}
+              data-cy="save-proforma-btn"
+              style={{ padding: '0.5rem 1rem', backgroundColor: '#16a34a', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+            >
+              Save Current
+            </button>
+          </div>
+          {savedProFormas.length > 0 && (
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {savedProFormas.map((item) => (
+                <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0', borderBottom: '1px solid #e5e7eb' }}>
+                  <span style={{ fontWeight: '500', color: '#111827' }}>{item.name}</span>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      onClick={() => handleLoad(item)}
+                      style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}
+                    >
+                      Load
+                    </button>
+                    <button
+                      onClick={() => deleteProForma(item.id)}
+                      style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', color: '#dc2626', cursor: 'pointer' }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
       <div style={styles.mainLayout}>
         <div style={styles.formContainer}>
           {/* LOAN DETAILS SECTION */}
