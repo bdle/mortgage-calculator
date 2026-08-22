@@ -44,8 +44,10 @@ export default function MortgageCalculator() {
   // 2. Hydrate all input states when loading a saved pro forma
   const handleLoad = (savedItem) => {
     if (!savedItem || !savedItem.data) return;
+    // 1. Populate the property name input field with the loaded record's name
+    setPropertyName(savedItem.name || '');
+    // 2. hydrate all form calculation fields
     const d = savedItem.data;
-
     setPurchasePrice(d.purchasePrice ?? '');
     setDownPaymentPercent(d.downPaymentPercent ?? '');
     setDownPaymentAmount(d.downPaymentAmount ?? '');
@@ -220,38 +222,46 @@ export default function MortgageCalculator() {
       {/* Saved Pro Formas Manager */}
       {user && (
         <div style={{ backgroundColor: '#f9fafb', padding: '1rem', borderRadius: '6px', marginBottom: '1.5rem', border: '1px solid #e5e7eb' }}>
-          <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '1rem', color: '#111827' }}>Save / Load Pro Forma</h3>
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-            <input
-              type="text"
-              placeholder="Property Address / Nickname"
+          <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '1rem', color: '#111827' }}>Save / Load Mortgage Pro Forma</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', width: '100%', marginBottom: '1rem' }}>
+            <FormInput
+              label="Name of Mortgage Pro Forma"
+              id="proforma"
+              dataCy="proforma"
               value={propertyName}
               onChange={(e) => setPropertyName(e.target.value)}
-              style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', border: '1px solid #d1d5db' }}
             />
-            <button
-              onClick={handleSave}
-              data-cy="save-proforma-btn"
-              style={{ padding: '0.5rem 1rem', backgroundColor: '#16a34a', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-            >
-              Save Current
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                onClick={handleSave}
+                data-cy="save-proforma-btn"
+                style={{ padding: '0.5rem 1rem', backgroundColor: '#16a34a', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Save
+              </button>
+            </div>
           </div>
           {savedProFormas.length > 0 && (
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {savedProFormas.map((item) => (
+              {savedProFormas.map((item, index) => (
                 <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0', borderBottom: '1px solid #e5e7eb' }}>
                   <span style={{ fontWeight: '500', color: '#111827' }}>{item.name}</span>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button
                       onClick={() => handleLoad(item)}
+                      data-cy={`load-btn-${index}`}
                       style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}
                     >
                       Load
                     </button>
                     <button
                       onClick={() => deleteProForma(item.id)}
-                      style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', color: '#dc2626', cursor: 'pointer' }}
+                      data-cy={`delete-btn-${index}`}
+                      style={{
+                        padding: '0.25rem 0.5rem', fontSize: '0.75rem', border: '1px solid var(--btn-delete-border, #fca5a5)',
+                        backgroundColor: 'var(--btn-delete-bg, #fee2e2)',
+                        color: 'var(--btn-delete-color, #b91c1c)', cursor: 'pointer'
+                      }}
                     >
                       Delete
                     </button>
