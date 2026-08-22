@@ -1,6 +1,6 @@
+
 import { useMemo } from 'react';
 import { parseUSNumber } from '../utils/formatters';
-
 export function useMortgageCalculator({
     purchasePrice,
     downPaymentType,
