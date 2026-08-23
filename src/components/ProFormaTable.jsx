@@ -57,6 +57,7 @@ export default function ProFormaTable({ savedProFormas, onLoad, onDelete }) {
     const [sortDirection, setSortDirection] = useState('asc'); // 'asc' | 'desc'
 
     // Filter state values
+    const [addressFilter, setAddressFilter] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
     const [maxRate, setMaxRate] = useState('');
 
@@ -72,6 +73,15 @@ export default function ProFormaTable({ savedProFormas, onLoad, onDelete }) {
     // 1. Apply Filtering First
     const filteredProFormas = useMemo(() => {
         return savedProFormas.filter((item) => {
+            // Partial address matching
+            if (addressFilter.trim() !== '') {
+                const query = addressFilter.toLowerCase().trim();
+                const full = (item.name || '').toLowerCase();
+                const street = (extractStreetName(item.name) || '').toLowerCase();
+                if (!full.includes(query) && !street.includes(query)) {
+                    return false;
+                }
+            }
             const price = parseUSNumber(item.data?.purchasePrice);
             const parsedRate = parseUSNumber(item.data?.interestRate);
             const rate = typeof parsedRate === 'number' && !isNaN(parsedRate) ? parsedRate : 0;
@@ -88,7 +98,7 @@ export default function ProFormaTable({ savedProFormas, onLoad, onDelete }) {
 
             return true;
         });
-    }, [savedProFormas, maxPrice, maxRate]);
+    }, [savedProFormas, addressFilter, maxPrice, maxRate]);
 
     // 2. Apply Sorting to Filtered Data
     const sortedProFormas = useMemo(() => {
@@ -162,6 +172,19 @@ export default function ProFormaTable({ savedProFormas, onLoad, onDelete }) {
                 }}
             >
                 <strong style={{ color: 'var(--input-color, #111827)' }}>Filters:</strong>
+                {/* Partial Address Filter */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <label htmlFor="filter-address" style={{ color: '#4b5563' }}>Address:</label>
+                    <input
+                        id="filter-address"
+                        type="text"
+                        placeholder="e.g. Main St"
+                        value={addressFilter}
+                        onChange={(e) => setAddressFilter(e.target.value)}
+                        data-cy="filter-address-input"
+                        style={{ ...filterInputStyle, width: '130px' }}
+                    />
+                </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                     <label htmlFor="filter-max-price" style={{ color: '#4b5563' }}>Max Price ($):</label>
