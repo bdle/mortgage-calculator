@@ -61,14 +61,14 @@ export function useMortgageCalculator({
         const isRentCovered = netCashFlow >= 0;
 
         return {
-            loanAmount,
-            monthlyPrincipalAndInterest,
-            monthlyTax,
-            monthlyInsurance,
-            monthlyWater,
-            totalMonthlyPayment,
-            rent,
-            netCashFlow,
+            loanAmount: isNaN(loanAmount) ? 0 : loanAmount,
+            monthlyPrincipalAndInterest: isNaN(monthlyPrincipalAndInterest) ? 0 : monthlyPrincipalAndInterest,
+            monthlyTax: isNaN(monthlyTax) ? 0 : monthlyTax,
+            monthlyInsurance: isNaN(monthlyInsurance) ? 0 : monthlyInsurance,
+            monthlyWater: isNaN(monthlyWater) ? 0 : monthlyWater,
+            totalMonthlyPayment: isNaN(totalMonthlyPayment) ? 0 : totalMonthlyPayment,
+            rent: isNaN(rent) ? 0 : rent,
+            netCashFlow: isNaN(netCashFlow) ? 0 : netCashFlow,
             isRentCovered,
         };
     }, [
