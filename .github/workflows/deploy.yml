@@ -95,37 +95,39 @@ jobs:
       test_suite: 'tier1'
       dispatcher_text: 'Atto Mattic from mortgage-calculator repo'
   
-  package-sent-jfrog:
-    needs: [run-cypress-test]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+  # Disabled jfrog intergration as my trial is expired
+  # also perhaps turn this into a reusable workflow in future as well
+  # package-sent-jfrog:
+  #   needs: [run-cypress-test]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 20
+  #         cache: 'npm'
 
-      - name: Install Dependencies
-        run: npm ci
+  #     - name: Install Dependencies
+  #       run: npm ci
 
-      - name: Build Project
-        run: npm run build
-      # 4. Package build folder into a .zip bundle
-      - name: Compress Build Artifact
-        run: |
-          zip -r mortgage-calculator-v${{ github.run_number }}.zip dist/
+  #     - name: Build Project
+  #       run: npm run build
+  #     # 4. Package build folder into a .zip bundle
+  #     - name: Compress Build Artifact
+  #       run: |
+  #         zip -r mortgage-calculator-v${{ github.run_number }}.zip dist/
 
-      # 5. Setup official JFrog CLI
-      - name: Setup JFrog CLI
-        uses: jfrog/setup-jfrog-cli@v4
-        env:
-          JF_URL: ${{ secrets.JF_URL }}
-          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+  #     # 5. Setup official JFrog CLI
+  #     - name: Setup JFrog CLI
+  #       uses: jfrog/setup-jfrog-cli@v4
+  #       env:
+  #         JF_URL: ${{ secrets.JF_URL }}
+  #         JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
 
-      # 6. Upload build artifact to Artifactory Generic Repository
-      - name: Upload Artifact to JFrog
-        run: |
-          jf rt upload mortgage-calculator-v${{ github.run_number }}.zip mortgage-calculator-builds/
+  #     # 6. Upload build artifact to Artifactory Generic Repository
+  #     - name: Upload Artifact to JFrog
+  #       run: |
+  #         jf rt upload mortgage-calculator-v${{ github.run_number }}.zip mortgage-calculator-builds/

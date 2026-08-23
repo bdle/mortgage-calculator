@@ -13,7 +13,9 @@ export default function MortgageCalculator() {
     saveProForma,
     deleteProForma
   } = useUserProFormas();
+  const [currentDocId, setCurrentDocId] = useState(null);
   const [propertyName, setPropertyName] = useState('');
+
   // Save handler
   const handleSave = async () => {
     if (!propertyName.trim()) {
@@ -39,11 +41,13 @@ export default function MortgageCalculator() {
     };
     await saveProForma(propertyName, currentData);
     setPropertyName('');
+    setCurrentDocId(null);
   };
 
   // 2. Hydrate all input states when loading a saved pro forma
   const handleLoad = (savedItem) => {
     if (!savedItem || !savedItem.data) return;
+    setCurrentDocId(savedItem.id); // store active record id
     // 1. Populate the property name input field with the loaded record's name
     setPropertyName(savedItem.name || '');
     // 2. hydrate all form calculation fields
