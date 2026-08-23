@@ -40,8 +40,7 @@ export default function MortgageCalculator() {
       // include all other inputs
     };
     await saveProForma(propertyName, currentData);
-    setPropertyName('');
-    setCurrentDocId(null);
+    resetToDefaults();
   };
 
   // 2. Hydrate all input states when loading a saved pro forma
@@ -67,24 +66,58 @@ export default function MortgageCalculator() {
     setPropertyManagementFee(d.propertyManagementFee ?? '');
   };
 
-  const [purchasePrice, setPurchasePrice] = useState('1,600,000');
+  const handleDelete = async (itemId) => {
+    await deleteProForma(itemId);
+
+    // If the deleted pro forma was the active loaded one (or unconditionally)
+    if (currentDocId === itemId || !currentDocId) {
+      resetToDefaults();
+    }
+  };
+
+  const [purchasePrice, setPurchasePrice] = useState('0');
 
   // Dedicated Down Payment States (%) and ($)
-  const [downPaymentPercent, setDownPaymentPercent] = useState('41.25');
-  const [downPaymentAmount, setDownPaymentAmount] = useState('660,000');
+  const [downPaymentPercent, setDownPaymentPercent] = useState('0');
+  const [downPaymentAmount, setDownPaymentAmount] = useState('0');
 
-  const [interestRate, setInterestRate] = useState('6.25');
+  const [interestRate, setInterestRate] = useState('0');
   const [loanTermYears, setLoanTermYears] = useState(30);
 
   const [taxRatePerThousand, setTaxRatePerThousand] = useState('12.40');
-  const [yearlyPropertyTax, setYearlyPropertyTax] = useState('19,840.00');
-  const [yearlyInsurance, setYearlyInsurance] = useState('4,700');
+  const [yearlyPropertyTax, setYearlyPropertyTax] = useState('0');
+  const [yearlyInsurance, setYearlyInsurance] = useState('0');
   const [hoaFee, setHoaFee] = useState('0');
-  const [yearlyWaterCost, setYearlyWaterCost] = useState('2000');
+  const [yearlyWaterCost, setYearlyWaterCost] = useState('0');
 
-  const [monthlyRent, setMonthlyRent] = useState('10,650');
-  const [propertyManagementRate, setPropertyManagementRate] = useState('4');
-  const [propertyManagementFee, setPropertyManagementFee] = useState('426.00');
+  const [monthlyRent, setMonthlyRent] = useState('0');
+  const [propertyManagementRate, setPropertyManagementRate] = useState('0');
+  const [propertyManagementFee, setPropertyManagementFee] = useState('0');
+
+  //common function to reset to default to be used once a delete is done to a proforma
+  const resetToDefaults = () => {
+    setPropertyName('');
+    setCurrentDocId(null);
+
+    // Property & Loan Defaults
+    setPurchasePrice('0');
+    setDownPaymentPercent('0');
+    setDownPaymentAmount('0');
+    setInterestRate('0');
+    setLoanTermYears('30'); // or '0'
+
+    // Taxes & Fees Defaults
+    setTaxRatePerThousand('0');
+    setYearlyPropertyTax('0');
+    setYearlyInsurance('0');
+    setHoaFee('0');
+    setYearlyWaterCost('0');
+
+    // Rent & Management Defaults
+    setMonthlyRent('0');
+    setPropertyManagementRate('0');
+    setPropertyManagementFee('0');
+  };
 
   // Purchase Price Change Handler (recalculates Down Payment $ & Property Tax)
   const handlePriceChange = (e) => {
