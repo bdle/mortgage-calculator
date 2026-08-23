@@ -246,33 +246,52 @@ export default function MortgageCalculator() {
             </div>
           </div>
           {savedProFormas.length > 0 && (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {savedProFormas.map((item, index) => (
-                <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0', borderBottom: '1px solid #e5e7eb' }}>
-                  <span style={{ fontWeight: '500', color: '#111827' }}>{item.name}</span>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button
-                      onClick={() => handleLoad(item)}
-                      data-cy={`load-btn-${index}`}
-                      style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}
-                    >
-                      Load
-                    </button>
-                    <button
-                      onClick={() => deleteProForma(item.id)}
-                      data-cy={`delete-btn-${index}`}
-                      style={{
-                        padding: '0.25rem 0.5rem', fontSize: '0.75rem', border: '1px solid var(--btn-delete-border, #fca5a5)',
-                        backgroundColor: 'var(--btn-delete-bg, #fee2e2)',
-                        color: 'var(--btn-delete-color, #b91c1c)', cursor: 'pointer'
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <div
+              style={{
+                marginTop: '0.75rem',
+                /* Enable scrollable list only when more than 3 items exist */
+                maxHeight: savedProFormas.length > 3 ? '180px' : 'none',
+                overflowY: savedProFormas.length > 3 ? 'auto' : 'visible',
+                paddingRight: savedProFormas.length > 3 ? '0.35rem' : '0',
+                borderTop: '1px solid #e5e7eb',
+                paddingTop: '0.5rem'
+              }}
+            >
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {savedProFormas.map((item, index) => (
+                  <li
+                    key={item.id}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '0.45rem 0',
+                      borderBottom: '1px solid #f3f4f6'
+                    }}
+                  >
+                    <span style={{ fontWeight: '500', color: 'var(--input-color, #111827)', fontSize: '0.9rem' }}>
+                      {item.name}
+                    </span>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button
+                        onClick={() => handleLoad(item)}
+                        data-cy={`load-proforma-btn-${index}`}
+                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}
+                      >
+                        Load
+                      </button>
+                      <button
+                        onClick={() => deleteProForma(item.id)}
+                        className="btn-delete"
+                        data-cy={`delete-proforma-btn-${index}`}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
       )}
