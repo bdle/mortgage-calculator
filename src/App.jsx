@@ -246,33 +246,78 @@ export default function MortgageCalculator() {
             </div>
           </div>
           {savedProFormas.length > 0 && (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {savedProFormas.map((item, index) => (
-                <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0', borderBottom: '1px solid #e5e7eb' }}>
-                  <span style={{ fontWeight: '500', color: '#111827' }}>{item.name}</span>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button
-                      onClick={() => handleLoad(item)}
-                      data-cy={`load-btn-${index}`}
-                      style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}
-                    >
-                      Load
-                    </button>
-                    <button
-                      onClick={() => deleteProForma(item.id)}
-                      data-cy={`delete-btn-${index}`}
-                      style={{
-                        padding: '0.25rem 0.5rem', fontSize: '0.75rem', border: '1px solid var(--btn-delete-border, #fca5a5)',
-                        backgroundColor: 'var(--btn-delete-bg, #fee2e2)',
-                        color: 'var(--btn-delete-color, #b91c1c)', cursor: 'pointer'
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            savedProFormas.length > 3 ? (
+              /* Dropdown UI for > 3 items */
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.75rem' }}>
+                <select
+                  onChange={(e) => {
+                    const selected = savedProFormas.find(p => p.id === e.target.value);
+                    if (selected) handleLoad(selected);
+                  }}
+                  value={currentDocId || ''}
+                  data-cy="saved-proforma-dropdown"
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem',
+                    borderRadius: '4px',
+                    border: '1px solid var(--input-border, #d1d5db)',
+                    backgroundColor: 'var(--input-bg, #ffffff)',
+                    color: 'var(--input-color, #111827)'
+                  }}
+                >
+                  <option value="" disabled>-- Select a Saved Pro Forma to Load --</option>
+                  {savedProFormas.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+
+                {currentDocId && (
+                  <button
+                    onClick={() => deleteProForma(currentDocId)}
+                    className="btn-delete"
+                    data-cy="delete-selected-proforma-btn"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+            ) : (
+              /* Standard Flat List for <= 3 items */
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0.75rem 0 0 0' }}>
+                {savedProFormas.map((item, index) => (
+                  <li
+                    key={item.id}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '0.4rem 0',
+                      borderBottom: '1px solid #e5e7eb'
+                    }}
+                  >
+                    <span style={{ fontWeight: '500', color: 'var(--input-color, #111827)' }}>{item.name}</span>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button
+                        onClick={() => handleLoad(item)}
+                        data-cy={`load-proforma-btn-${index}`}
+                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}
+                      >
+                        Load
+                      </button>
+                      <button
+                        onClick={() => deleteProForma(item.id)}
+                        className="btn-delete"
+                        data-cy={`delete-proforma-btn-${index}`}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )
           )}
         </div>
       )}
