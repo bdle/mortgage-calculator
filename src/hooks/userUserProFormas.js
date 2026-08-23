@@ -4,10 +4,13 @@ import { onAuthStateChanged } from 'firebase/auth';
 import {
     collection,
     addDoc,
-    deleteDoc,
+    setDoc,
     doc,
+    deleteDoc,
     onSnapshot,
     query,
+    where,
+    getDocs,
     serverTimestamp
 } from 'firebase/firestore';
 
@@ -49,12 +52,33 @@ export function useUserProFormas() {
     // Save new pro forma
     const saveProForma = async (name, formData) => {
         if (!user) throw new Error('Must be logged in to save');
+
+        // trim the pro forma name before looking it up
+        const trimmedName = (name || '').trim() || `Property - ${new Date().toLocaleDateString()}`;
         const userProFormasRef = collection(db, 'users', user.uid, 'proFormas');
-        return addDoc(userProFormasRef, {
-            name: name || `Property - ${new Date().toLocaleDateString()}`,
-            data: formData,
-            createdAt: serverTimestamp()
-        });
+
+
+        // Check if a pro forma with this exact name already exists
+        const q = query(userProFormasRef, where('name', '==', trimmedName));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            // 1. UPDATE EXISTING ENTRY
+            const existingDoc = querySnapshot.docs[0];
+            const docRef = doc(db, 'users', user.uid, 'proFormas', existingDoc.id);
+            return setDoc(docRef, {
+                name: trimmedName,
+                data: formData,
+                updatedAt: serverTimestamp()
+            }, { merge: true });
+        } else {
+            // 2. CREATE NEW ENTRY
+            return addDoc(userProFormasRef, {
+                name: trimmedName,
+                data: formData,
+                createdAt: serverTimestamp()
+            });
+        }
     };
 
     // Delete pro forma
