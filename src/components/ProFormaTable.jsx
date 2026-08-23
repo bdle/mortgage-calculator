@@ -2,15 +2,12 @@ import React, { useState, useMemo } from 'react';
 import { parseUSNumber, extractStreetName } from '../utils/formatters';
 
 // Helper to compute Net Cash Flow for each row item
-
-export function computeRowNetCashFlow(data = {}) {
+function computeRowNetCashFlow(data = {}) {
     const safe = data || {};
-
     const price = parseUSNumber(safe.purchasePrice);
     let down = parseUSNumber(safe.downPaymentAmount);
     const downPct = parseUSNumber(safe.downPaymentPercent);
 
-    // Fallback: If dollar down payment is 0 but percent exists
     if (down === 0 && downPct > 0 && price > 0) {
         down = (price * downPct) / 100;
     }
@@ -18,7 +15,6 @@ export function computeRowNetCashFlow(data = {}) {
     const rate = parseUSNumber(safe.interestRate);
     const termYears = parseUSNumber(safe.loanTerm) || 30;
 
-    // Taxes: Use stored yearly tax or calculate from rate ($ per $1,000)
     let taxYearly = parseUSNumber(safe.yearlyPropertyTax);
     const taxRate = parseUSNumber(safe.propertyTaxRate);
     if (taxYearly === 0 && taxRate > 0 && price > 0) {
@@ -30,10 +26,8 @@ export function computeRowNetCashFlow(data = {}) {
     const waterYearly = parseUSNumber(safe.yearlyWaterCost);
     const rent = parseUSNumber(safe.monthlyRent);
 
-    // Management Fee: Use stored dollar amount or calculate from percent of rent
     let mgmt = parseUSNumber(safe.propertyManagementFee);
 
-    // Monthly Principal & Interest Calculation
     const loanAmount = Math.max(0, price - down);
     const monthlyRate = rate > 0 ? rate / 100 / 12 : 0;
     const numPayments = termYears > 0 ? termYears * 12 : 0;
@@ -52,7 +46,6 @@ export function computeRowNetCashFlow(data = {}) {
     const monthlyTax = taxYearly / 12;
     const monthlyInsurance = insYearly / 12;
     const monthlyWater = waterYearly / 12;
-
     const totalMonthlyExpense =
         monthlyPI + monthlyTax + monthlyInsurance + hoa + monthlyWater + mgmt;
 
@@ -63,6 +56,10 @@ export default function ProFormaTable({ savedProFormas, onLoad, onDelete }) {
     const [sortField, setSortField] = useState('name');
     const [sortDirection, setSortDirection] = useState('asc'); // 'asc' | 'desc'
 
+    // Filter state values
+    const [maxPrice, setMaxPrice] = useState('');
+    const [maxRate, setMaxRate] = useState('');
+
     const handleSort = (field) => {
         if (sortField === field) {
             setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
@@ -72,8 +69,30 @@ export default function ProFormaTable({ savedProFormas, onLoad, onDelete }) {
         }
     };
 
+    // 1. Apply Filtering First
+    const filteredProFormas = useMemo(() => {
+        return savedProFormas.filter((item) => {
+            const price = parseUSNumber(item.data?.purchasePrice);
+            const parsedRate = parseUSNumber(item.data?.interestRate);
+            const rate = typeof parsedRate === 'number' && !isNaN(parsedRate) ? parsedRate : 0;
+
+            const numMaxPrice = parseUSNumber(maxPrice);
+            const numMaxRate = parseUSNumber(maxRate);
+
+            if (maxPrice !== '' && numMaxPrice > 0 && price !== numMaxPrice) {
+                return false;
+            }
+            if (maxRate !== '' && numMaxRate > 0 && rate !== numMaxRate) {
+                return false;
+            }
+
+            return true;
+        });
+    }, [savedProFormas, maxPrice, maxRate]);
+
+    // 2. Apply Sorting to Filtered Data
     const sortedProFormas = useMemo(() => {
-        return [...savedProFormas].sort((a, b) => {
+        return [...filteredProFormas].sort((a, b) => {
             let aVal, bVal;
 
             switch (sortField) {
@@ -110,7 +129,7 @@ export default function ProFormaTable({ savedProFormas, onLoad, onDelete }) {
 
             return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
         });
-    }, [savedProFormas, sortField, sortDirection]);
+    }, [filteredProFormas, sortField, sortDirection]);
 
     const getSortIndicator = (field) => {
         if (sortField !== field) return ' ↕';
@@ -126,6 +145,64 @@ export default function ProFormaTable({ savedProFormas, onLoad, onDelete }) {
             <h3 style={{ marginBottom: '0.75rem', fontSize: '1.1rem', color: 'var(--input-color, #111827)' }}>
                 Saved Pro Formas
             </h3>
+
+            {/* Filter Toolbar */}
+            <div
+                style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '1rem',
+                    alignItems: 'center',
+                    backgroundColor: 'var(--input-bg, #ffffff)',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '6px',
+                    border: '1px solid var(--input-border, #e5e7eb)',
+                    marginBottom: '1rem',
+                    fontSize: '0.875rem',
+                }}
+            >
+                <strong style={{ color: 'var(--input-color, #111827)' }}>Filters:</strong>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <label htmlFor="filter-max-price" style={{ color: '#4b5563' }}>Max Price ($):</label>
+                    <input
+                        id="filter-max-price"
+                        type="text"
+                        placeholder="e.g. 1,500,000"
+                        value={maxPrice}
+                        onChange={(e) => setMaxPrice(e.target.value)}
+                        data-cy="filter-max-price-input"
+                        style={filterInputStyle}
+                    />
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <label htmlFor="filter-max-rate" style={{ color: '#4b5563' }}>Max Rate (%):</label>
+                    <input
+                        id="filter-max-rate"
+                        type="text"
+                        placeholder="e.g. 6.5"
+                        value={maxRate}
+                        onChange={(e) => setMaxRate(e.target.value)}
+                        data-cy="filter-max-rate-input"
+                        style={filterInputStyle}
+                    />
+                </div>
+
+                {(maxPrice || maxRate) && (
+                    <button
+                        onClick={() => {
+                            setMaxPrice('');
+                            setMaxRate('');
+                        }}
+                        data-cy="clear-filters-btn"
+                        style={clearBtnStyle}
+                    >
+                        Clear Filters
+                    </button>
+                )}
+            </div>
+
             <table
                 data-cy="proforma-table"
                 style={{
@@ -161,58 +238,67 @@ export default function ProFormaTable({ savedProFormas, onLoad, onDelete }) {
                     </tr>
                 </thead>
                 <tbody>
-                    {sortedProFormas.map((item, index) => {
-                        const streetName = extractStreetName(item.name);
-                        const price = parseUSNumber(item.data?.purchasePrice);
-                        const down = parseUSNumber(item.data?.downPaymentAmount);
-                        const rate = parseUSNumber(item.data?.interestRate);
-                        const cashFlow = computeRowNetCashFlow(item.data);
-                        const isPositive = cashFlow >= 0;
+                    {sortedProFormas.length === 0 ? (
+                        <tr>
+                            <td colSpan={6} style={{ ...cellStyle, textAlign: 'center', color: '#6b7280' }}>
+                                No pro formas match the filter criteria.
+                            </td>
+                        </tr>
+                    ) : (
+                        sortedProFormas.map((item, index) => {
+                            const streetName = extractStreetName(item.name);
+                            const price = parseUSNumber(item.data?.purchasePrice);
+                            const down = parseUSNumber(item.data?.downPaymentAmount);
+                            const parsedRate = parseUSNumber(item.data?.interestRate);
+                            const rate = typeof parsedRate === 'number' && !isNaN(parsedRate) ? parsedRate : 0;
+                            const cashFlow = computeRowNetCashFlow(item.data);
+                            const isPositive = cashFlow >= 0;
 
-                        return (
-                            <tr
-                                key={item.id}
-                                data-cy={`proforma-row-${index}`}
-                                style={{ borderBottom: '1px solid var(--input-border, #f3f4f6)' }}
-                            >
-                                <td style={cellStyle}><strong>{streetName}</strong></td>
-                                <td style={cellStyle}>${price.toLocaleString('en-US')}</td>
-                                <td style={cellStyle}>${down.toLocaleString('en-US')}</td>
-                                <td style={cellStyle}>{rate.toFixed(2)}%</td>
-                                <td
-                                    style={{
-                                        ...cellStyle,
-                                        fontWeight: '600',
-                                        color: isPositive ? '#16a34a' : '#dc2626',
-                                    }}
-                                    data-cy={`proforma-cashflow-${index}`}
+                            return (
+                                <tr
+                                    key={item.id}
+                                    data-cy={`proforma-row-${index}`}
+                                    style={{ borderBottom: '1px solid var(--input-border, #f3f4f6)' }}
                                 >
-                                    {isPositive ? '+' : '-'}${Math.abs(cashFlow).toLocaleString('en-US', {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2,
-                                    })}
-                                </td>
-                                <td style={{ ...cellStyle, textAlign: 'center' }}>
-                                    <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
-                                        <button
-                                            onClick={() => onLoad(item)}
-                                            data-cy={`load-proforma-btn-${index}`}
-                                            style={actionBtnStyle}
-                                        >
-                                            Load
-                                        </button>
-                                        <button
-                                            onClick={() => onDelete(item.id)}
-                                            className="btn-delete"
-                                            data-cy={`delete-proforma-btn-${index}`}
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        );
-                    })}
+                                    <td style={cellStyle}><strong>{streetName}</strong></td>
+                                    <td style={cellStyle}>${price.toLocaleString('en-US')}</td>
+                                    <td style={cellStyle}>${down.toLocaleString('en-US')}</td>
+                                    <td style={cellStyle}>{rate.toFixed(2)}%</td>
+                                    <td
+                                        style={{
+                                            ...cellStyle,
+                                            fontWeight: '600',
+                                            color: isPositive ? '#16a34a' : '#dc2626',
+                                        }}
+                                        data-cy={`proforma-cashflow-${index}`}
+                                    >
+                                        {isPositive ? '+' : '-'}${Math.abs(cashFlow).toLocaleString('en-US', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                        })}
+                                    </td>
+                                    <td style={{ ...cellStyle, textAlign: 'center' }}>
+                                        <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+                                            <button
+                                                onClick={() => onLoad(item)}
+                                                data-cy={`load-proforma-btn-${index}`}
+                                                style={actionBtnStyle}
+                                            >
+                                                Load
+                                            </button>
+                                            <button
+                                                onClick={() => onDelete(item.id)}
+                                                className="btn-delete"
+                                                data-cy={`delete-proforma-btn-${index}`}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })
+                    )}
                 </tbody>
             </table>
         </div>
@@ -239,5 +325,26 @@ const actionBtnStyle = {
     border: '1px solid #d1d5db',
     backgroundColor: '#ffffff',
     color: '#111827',
+    cursor: 'pointer',
+};
+
+const filterInputStyle = {
+    padding: '0.35rem 0.5rem',
+    borderRadius: '4px',
+    border: '1px solid var(--input-border, #d1d5db)',
+    backgroundColor: 'var(--input-bg, #ffffff)',
+    color: 'var(--input-color, #111827)',
+    fontSize: '0.85rem',
+    width: '110px',
+    outline: 'none',
+};
+
+const clearBtnStyle = {
+    padding: '0.35rem 0.75rem',
+    fontSize: '0.8rem',
+    borderRadius: '4px',
+    border: '1px solid #d1d5db',
+    backgroundColor: '#f3f4f6',
+    color: '#374151',
     cursor: 'pointer',
 };
