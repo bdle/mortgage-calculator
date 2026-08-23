@@ -8,13 +8,16 @@ export const formatUSNumber = (val) => {
 
 // Strips non-digit characters (except decimals) before parsing values [cite: 84]
 export const parseUSNumber = (val) => {
-    if (val === '') return '';
-    const clean = val.toString().replace(/,/g, '');
-    return isNaN(clean) ? '' : clean;
+    if (val === undefined || val === null || val === '') return 0;
+    if (typeof val === 'number') return isNaN(val) ? 0 : val;
+    const clean = String(val).replace(/[^0-9.-]+/g, '');
+    const parsed = parseFloat(clean);
+    return isNaN(parsed) ? 0 : parsed;
 };
 
 // Formats a raw number as US currency string with 2 decimal places [cite: 43, 75]
 export const formatCurrency = (val) => {
+    if (val === undefined || val === null || val === '') return '';
     const num = Number(val) || 0;
     return num.toLocaleString('en-US', {
         minimumFractionDigits: 2,
@@ -26,3 +29,13 @@ export const formatCurrency = (val) => {
 export const handleInputFocus = (e) => {
     e.target.select();
 };
+
+export function extractStreetName(name = '') {
+    if (!name || typeof name !== 'string') return '';
+    // Splits at the first comma or hyphen if followed by city/state info
+    //   const parts = name.split(/[,–—]/);
+    // Splits at the first occurrence of the word "pay" (case-insensitive)
+    // Uses \b to ensure whole word match, or remove \b if partial matching (e.g. payment) is desired
+    const parts = name.split(/\bpay\b/i);
+    return parts[0].trim();
+}

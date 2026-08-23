@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FormInput } from './components/FormInput';
 import { BreakdownItem } from './components/BreakdownItem';
+import ProFormaTable from './components/ProFormaTable';
 import { useMortgageCalculator } from './hooks/useMortgageCalculator';
 import { formatUSNumber, parseUSNumber, formatCurrency } from './utils/formatters';
 import { useUserProFormas } from './hooks/userUserProFormas';
@@ -470,6 +471,13 @@ export default function MortgageCalculator() {
           </div>
         </div>
       </div>
+      {user && (
+        <ProFormaTable
+          savedProFormas={savedProFormas}
+          onLoad={handleLoad}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 }
