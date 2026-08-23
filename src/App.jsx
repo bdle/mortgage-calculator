@@ -279,46 +279,18 @@ export default function MortgageCalculator() {
             </div>
           </div>
           {savedProFormas.length > 0 && (
-            savedProFormas.length > 3 ? (
-              /* Dropdown UI for > 3 items */
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.75rem' }}>
-                <select
-                  onChange={(e) => {
-                    const selected = savedProFormas.find(p => p.id === e.target.value);
-                    if (selected) handleLoad(selected);
-                  }}
-                  value={currentDocId || ''}
-                  data-cy="saved-proforma-dropdown"
-                  style={{
-                    flex: 1,
-                    padding: '0.5rem',
-                    borderRadius: '4px',
-                    border: '1px solid var(--input-border, #d1d5db)',
-                    backgroundColor: 'var(--input-bg, #ffffff)',
-                    color: 'var(--input-color, #111827)'
-                  }}
-                >
-                  <option value="" disabled>-- Select a Saved Pro Forma to Load --</option>
-                  {savedProFormas.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name}
-                    </option>
-                  ))}
-                </select>
-
-                {currentDocId && (
-                  <button
-                    onClick={() => handleDelete(currentDocId)}
-                    className="btn-delete"
-                    data-cy="delete-selected-proforma-btn"
-                  >
-                    Delete
-                  </button>
-                )}
-              </div>
-            ) : (
-              /* Standard Flat List for <= 3 items */
-              <ul style={{ listStyle: 'none', padding: 0, margin: '0.75rem 0 0 0' }}>
+            <div
+              style={{
+                marginTop: '0.75rem',
+                /* Enable scrollable list only when more than 3 items exist */
+                maxHeight: savedProFormas.length > 3 ? '180px' : 'none',
+                overflowY: savedProFormas.length > 3 ? 'auto' : 'visible',
+                paddingRight: savedProFormas.length > 3 ? '0.35rem' : '0',
+                borderTop: '1px solid #e5e7eb',
+                paddingTop: '0.5rem'
+              }}
+            >
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {savedProFormas.map((item, index) => (
                   <li
                     key={item.id}
@@ -326,11 +298,13 @@ export default function MortgageCalculator() {
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      padding: '0.4rem 0',
-                      borderBottom: '1px solid #e5e7eb'
+                      padding: '0.45rem 0',
+                      borderBottom: '1px solid #f3f4f6'
                     }}
                   >
-                    <span style={{ fontWeight: '500', color: 'var(--input-color, #111827)' }}>{item.name}</span>
+                    <span style={{ fontWeight: '500', color: 'var(--input-color, #111827)', fontSize: '0.9rem' }}>
+                      {item.name}
+                    </span>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button
                         onClick={() => handleLoad(item)}
@@ -350,7 +324,7 @@ export default function MortgageCalculator() {
                   </li>
                 ))}
               </ul>
-            )
+            </div>
           )}
         </div>
       )}
