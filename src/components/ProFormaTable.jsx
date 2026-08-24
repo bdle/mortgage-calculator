@@ -174,11 +174,11 @@ export default function ProFormaTable({ savedProFormas, onLoad, onDelete }) {
                 <strong style={{ color: 'var(--input-color, #111827)' }}>Filters:</strong>
                 {/* Partial Address Filter */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <label htmlFor="filter-address" style={{ color: '#4b5563' }}>Address:</label>
+                    <label htmlFor="filter-address" style={{ color: '#4b5563' }}>Pro forma:</label>
                     <input
                         id="filter-address"
                         type="text"
-                        placeholder="e.g. Main St"
+                        placeholder="partial name of pro forma"
                         value={addressFilter}
                         onChange={(e) => setAddressFilter(e.target.value)}
                         data-cy="filter-address-input"
@@ -241,7 +241,7 @@ export default function ProFormaTable({ savedProFormas, onLoad, onDelete }) {
                 <thead>
                     <tr style={{ backgroundColor: '#f3f4f6', borderBottom: '2px solid #e5e7eb' }}>
                         <th onClick={() => handleSort('name')} data-cy="sort-name-header" style={headerStyle}>
-                            Property Name{getSortIndicator('name')}
+                            Pro forma Name{getSortIndicator('name')}
                         </th>
                         <th onClick={() => handleSort('purchasePrice')} data-cy="sort-purchase-price-header" style={headerStyle}>
                             Purchase Price{getSortIndicator('purchasePrice')}
