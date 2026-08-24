@@ -1,90 +1,73 @@
-import { useState, useEffect } from 'react';
-import { auth, db, loginWithGoogle, logoutUser } from '../firebase';
+// src/hooks/useUserProFormas.js
+import { useState, useEffect, useCallback } from 'react';
+import { auth, loginWithGoogle, logoutUser } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import {
-    collection,
-    addDoc,
-    setDoc,
-    doc,
-    deleteDoc,
-    onSnapshot,
-    query,
-    where,
-    getDocs,
-    serverTimestamp
-} from 'firebase/firestore';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
 
 export function useUserProFormas() {
     const [user, setUser] = useState(null);
     const [savedProFormas, setSavedProFormas] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Monitor auth state
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-            setLoading(false);
-        });
-        return () => unsubscribe();
-    }, []);
-
-    // Sync pro forma records in real time for logged-in user
-    useEffect(() => {
-        if (!user) {
-            setSavedProFormas([]);
-            return;
-        }
-
-        const userProFormasRef = collection(db, 'users', user.uid, 'proFormas');
-        const q = query(userProFormasRef);
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const items = snapshot.docs.map((docSnap) => ({
-                id: docSnap.id,
-                ...docSnap.data()
-            }));
-            setSavedProFormas(items);
-        });
-
-        return () => unsubscribe();
-    }, [user]);
-
-    // Save new pro forma
-    const saveProForma = async (name, formData) => {
-        if (!user) throw new Error('Must be logged in to save');
-
-        // trim the pro forma name before looking it up
-        const trimmedName = (name || '').trim() || `Property - ${new Date().toLocaleDateString()}`;
-        const userProFormasRef = collection(db, 'users', user.uid, 'proFormas');
-
-
-        // Check if a pro forma with this exact name already exists
-        const q = query(userProFormasRef, where('name', '==', trimmedName));
-        const querySnapshot = await getDocs(q);
-
-        if (!querySnapshot.empty) {
-            // 1. UPDATE EXISTING ENTRY
-            const existingDoc = querySnapshot.docs[0];
-            const docRef = doc(db, 'users', user.uid, 'proFormas', existingDoc.id);
-            return setDoc(docRef, {
-                name: trimmedName,
-                data: formData,
-                updatedAt: serverTimestamp()
-            }, { merge: true });
-        } else {
-            // 2. CREATE NEW ENTRY
-            return addDoc(userProFormasRef, {
-                name: trimmedName,
-                data: formData,
-                createdAt: serverTimestamp()
-            });
-        }
+    // Helper to fetch auth headers with ID token
+    const getAuthHeaders = async () => {
+        if (!auth.currentUser) throw new Error('Not authenticated');
+        const token = await auth.currentUser.getIdToken(true);
+        return {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+        };
     };
 
-    // Delete pro forma
+    // Fetch pro formas from Micro API
+    const fetchProFormas = useCallback(async () => {
+        if (!auth.currentUser) return;
+        try {
+            const headers = await getAuthHeaders();
+            const res = await fetch(`${API_BASE_URL}/proformas`, { headers });
+            const data = await res.json();
+            setSavedProFormas(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error('Failed to load pro formas:', err);
+        }
+    }, []);
+
+    // Monitor auth state
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+            setUser(currentUser);
+            setLoading(false);
+            if (currentUser) {
+                await fetchProFormas();
+            } else {
+                setSavedProFormas([]);
+            }
+        });
+        return () => unsubscribe();
+    }, [fetchProFormas]);
+
+    // Save/Update pro forma via API
+    const saveProForma = async (name, formData) => {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API_BASE_URL}/proformas`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ name, data: formData }),
+        });
+        if (!res.ok) throw new Error('Failed to save pro forma');
+        await fetchProFormas();
+    };
+
+    // Delete pro forma via API
     const deleteProForma = async (id) => {
-        if (!user) return;
-        await deleteDoc(doc(db, 'users', user.uid, 'proFormas', id));
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API_BASE_URL}/proformas/${id}`, {
+            method: 'DELETE',
+            headers,
+        });
+        if (!res.ok) throw new Error('Failed to delete pro forma');
+        await fetchProFormas();
     };
 
     return {
@@ -94,6 +77,6 @@ export function useUserProFormas() {
         loginWithGoogle,
         logoutUser,
         saveProForma,
-        deleteProForma
+        deleteProForma,
     };
 }
