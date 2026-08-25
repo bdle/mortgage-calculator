@@ -2,13 +2,6 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-
-export const auth = getAuth(app);
-
-if (typeof window !== 'undefined') {
-    window.auth = auth;
-    window.signInWithCustomToken = signInWithCustomToken;
-}
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -26,3 +19,7 @@ export const db = getFirestore(app);
 
 export const loginWithGoogle = () => signInWithPopup(auth, googleProvider);
 export const logoutUser = () => signOut(auth);
+if (typeof window !== 'undefined') {
+    window.auth = auth;
+    window.signInWithCustomToken = signInWithCustomToken;
+}
