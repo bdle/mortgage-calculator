@@ -19,3 +19,6 @@ export const db = getFirestore(app);
 
 export const loginWithGoogle = () => signInWithPopup(auth, googleProvider);
 export const logoutUser = () => signOut(auth);
+if (window.Cypress) {
+    window.auth = auth;
+}
